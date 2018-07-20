@@ -5,9 +5,11 @@ from .Utilities import percentage
 
 # https://www.ssa.gov/planners/retire/delayret.html
 class DelayRetirementCredit(BenefitRule):
-	age_limit = models.IntegerField()
+	age_limit = models.FloatField()
 
 	def calculate(self, year_of_birth, normal_retirement_age, delayed_retirement_age):
+		normal_retirement_age = float(normal_retirement_age)
+		delayed_retirement_age = float(delayed_retirement_age)
 		if normal_retirement_age >= delayed_retirement_age:
 			return 0
 		forumla_piece = self.delay_retirement_credit_pieces.get(min_year__lte=year_of_birth, max_year__gte=year_of_birth)

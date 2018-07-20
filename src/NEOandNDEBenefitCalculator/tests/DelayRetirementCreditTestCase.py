@@ -19,7 +19,7 @@ class DelayRetirementCreditTestCase(TestCase):
 	def test_stepByStep_no_pieces(self):
 		drc = DelayRetirementCredit.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), age_limit=70)
 		with self.assertRaises(ObjectDoesNotExist):
-			drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80)
+			drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=80.0)
 
 	def test_stepByStep_no_delay_retirement(self):
 		drc = DelayRetirementCredit.objects.get(
@@ -27,17 +27,17 @@ class DelayRetirementCreditTestCase(TestCase):
 		)
 		instructions = [
 			Instruction(description='Get normal retirement age',
-				expressions=['normal retirement age = 67']),
+				expressions=['normal retirement age = 67.0']),
 			Instruction(description='Get delayed retirement age',
-				expressions=['delayed retirement age = 67']),
+				expressions=['delayed retirement age = 67.0']),
 			Instruction(description='Determine if person is eligible for delay retirement credit', 
 				expressions=['normal retirement age < delayed retirement age?',
-					'67 < 67?',
+					'67.0 < 67.0?',
 					'False']),
 			Instruction(description='Set delay retirement benefit percentage increase to zero',
 				expressions=['delay retirement benefit percentage increase = 0.00%'])
 		]
-		self.assertEqual(instructions, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=67))
+		self.assertEqual(instructions, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=67.0))
 
 	def test_stepByStep_with_delay_retirement(self):
 		drc = DelayRetirementCredit.objects.get(
@@ -45,26 +45,26 @@ class DelayRetirementCreditTestCase(TestCase):
 		)
 		instructions = [
 			Instruction(description='Get normal retirement age',
-				expressions=['normal retirement age = 67']),
+				expressions=['normal retirement age = 67.0']),
 			Instruction(description='Get delayed retirement age',
-				expressions=['delayed retirement age = 80']),
+				expressions=['delayed retirement age = 80.0']),
 			Instruction(description='Determine if person is eligible for delay retirement credit', 
 				expressions=['normal retirement age < delayed retirement age?',
-					'67 < 80?',
+					'67.0 < 80.0?',
 					'True']),
 			Instruction('Get delay retirement age limit',
-				['delay retirement age limit = 70']),
+				['delay retirement age limit = 70.0']),
 			Instruction('Capped retirement age if retirement age is greater than delay retirement age limit',
 				['retirement age = min(delay retirement age limit, retirement age)',
-				'retirement age = min(70, 80)',
-				'retirement age = 70']),
+				'retirement age = min(70.0, 80.0)',
+				'retirement age = 70.0']),
 			Instruction('Determine number of years delayed',
 				['number of years delayed = retirement age + 1 - normal retirement age'
-				'number of years delayed = 70 + 1 - 67',
-				'number of years delayed = 4']),
+				'number of years delayed = 70.0 + 1 - 67.0',
+				'number of years delayed = 4.0']),
 			Instruction('Determine number of years delayed',
 				['delay retirement benefit percentage increase = number of years delayed * monthly percent rate of increase',
-				'delay retirement benefit percentage increase = 4 * 8.00%',
+				'delay retirement benefit percentage increase = 4.0 * 8.00%',
 				'delay retirement benefit percentage increase = 32.00%'])
 		]
 		self.assertEqual(instructions, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80))

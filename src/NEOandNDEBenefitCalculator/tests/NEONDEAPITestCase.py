@@ -8,53 +8,46 @@ from NEOandNDEBenefitCalculator.models import *
 from NEOandNDEBenefitCalculator.serializers import *
 from NEOandNDEBenefitCalculator.views import NEONDEView
 
-data_request = {
-	'respondents': [
-		{
-			'id': 1,
-			'year_of_birth': 1954,
-			'years_of_covered_earnings': 15,
-			'annual_covered_earning': {'amount': 30000.00},
-			'years_of_non_covered_earnings': 25,
-			'annual_non_covered_earning': {'amount': 40000.00},
-			'fraction_of_non_covered_aime_to_non_covered_pension': 0.67,
-			'early_retirement_reduction': 0.00,
-			'delay_retirement_credit': 0.00,
-			'spousal_early_retirement_reduction': {'amount': 0.00},
-			'survivor_early_retirement_reduction': {'amount': 0.00}
-		},
-		{
-			'id': 2,
-			'year_of_birth': 1954,
-			'years_of_covered_earnings': 40,
-			'annual_covered_earning': {'amount': 50000.00},
-			'years_of_non_covered_earnings': 0,
-			'annual_non_covered_earning': {'amount': 0.00},
-			'fraction_of_non_covered_aime_to_non_covered_pension': 0.67,
-			'early_retirement_reduction': 0.00,
-			'delay_retirement_credit': 0.00,
-			'spousal_early_retirement_reduction': {'amount': 0.00},
-			'survivor_early_retirement_reduction': {'amount': 0.00}
-		}
-	],
-	'relationships': [
-		{
-			'person1_id': 1,
-			'person2_id': 2,
-			'relationship_type': 'M'
-		}
-	]
-}
-
-def requestStepByStepInstructions():
-	factory = APIRequestFactory()
-	url = '/api/neo-and-neo-benefit-calculator/stepByStep' # reverse('life-table-api:lifetable-Sx')
-	request = factory.post(url, data_request, format='json') 
-	neo_and_ndr_benefit_calculator_stepByStep_view = NEONDEView.as_view({'post': 'stepByStep'})
-	return neo_and_ndr_benefit_calculator_stepByStep_view(request)
-
 class NEONDEAPITestCase(APITestCase):
 	fixtures = ['CoveredEarning.json', 'NonCoveredEarning.json', 'Money.json', 'Person.json']
+
+	data_request = {
+		'respondents': [
+			{
+				'id': 1,
+				'year_of_birth': 1954,
+				'years_of_covered_earnings': 15,
+				'annual_covered_earning': {'amount': 30000.00},
+				'years_of_non_covered_earnings': 25,
+				'annual_non_covered_earning': {'amount': 40000.00},
+				'fraction_of_non_covered_aime_to_non_covered_pension': 0.67,
+				'early_retirement_reduction': 0.00,
+				'delay_retirement_credit': 0.00,
+				'spousal_early_retirement_reduction': {'amount': 0.00},
+				'survivor_early_retirement_reduction': {'amount': 0.00}
+			},
+			{
+				'id': 2,
+				'year_of_birth': 1954,
+				'years_of_covered_earnings': 40,
+				'annual_covered_earning': {'amount': 50000.00},
+				'years_of_non_covered_earnings': 0,
+				'annual_non_covered_earning': {'amount': 0.00},
+				'fraction_of_non_covered_aime_to_non_covered_pension': 0.67,
+				'early_retirement_reduction': 0.00,
+				'delay_retirement_credit': 0.00,
+				'spousal_early_retirement_reduction': {'amount': 0.00},
+				'survivor_early_retirement_reduction': {'amount': 0.00}
+			}
+		],
+		'relationships': [
+			{
+				'person1_id': 1,
+				'person2_id': 2,
+				'relationship_type': 'M'
+			}
+		]
+	}
 
 	def setUp(self):
 		nra = RetirementAge.objects.create(start_date=date.min, end_date=date.max,
@@ -95,7 +88,7 @@ class NEONDEAPITestCase(APITestCase):
 
 		GovernmentPensionOffset.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), offset=2/3)
 
-		drc = DelayRetirementCredit.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), age_limit=70)
+		drc = DelayRetirementCredit.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), age_limit=70.0)
 		DelayRetirementCreditPiece.objects.create(inital_percentage=0.055, min_year=1933, max_year=1934, percentage_rate=0, year_change=1, delay_retirement_credit=drc)
 		DelayRetirementCreditPiece.objects.create(inital_percentage=0.06, min_year=1935, max_year=1936, percentage_rate=0, year_change=1, delay_retirement_credit=drc)
 		DelayRetirementCreditPiece.objects.create(inital_percentage=0.065, min_year=1937, max_year=1938, percentage_rate=0, year_change=1, delay_retirement_credit=drc)
@@ -139,12 +132,13 @@ class NEONDEAPITestCase(APITestCase):
 		f3 = Factor.objects.create(order=3, primary_insurance_amount=wep_pia)
 		FactorPiece.objects.create(inital_factor=0.15, order=1, factor=f3)
 
-		MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), amount=118500)
+		max_tax_amount = Money.objects.create(amount=Decimal(118500))
+		MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), max_money=max_tax_amount)
 
 	def test_summary(self):
 		factory = APIRequestFactory()
 		url = '/api/neo-and-neo-benefit-calculator/summary' # reverse('life-table-api:lifetable-Sx')
-		request = factory.post(url, data_request, format='json') 
+		request = factory.post(url, self.data_request, format='json') 
 		neo_and_ndr_benefit_calculator_summary_view = NEONDEView.as_view({'post': 'summary'})
 		response = neo_and_ndr_benefit_calculator_summary_view(request)
 		# https://realpython.com/test-driven-development-of-a-django-restful-api/
@@ -193,8 +187,19 @@ class NEONDEAPITestCase(APITestCase):
 		# self.maxDiff = None
 		self.assertEqual(response.data, expected_response)
 
+	def requestStepByStepInstructions(self):
+		factory = APIRequestFactory()
+		url = '/api/neo-and-neo-benefit-calculator/stepByStep' # reverse('life-table-api:lifetable-Sx')
+		request = factory.post(url, self.data_request, format='json') 
+		neo_and_ndr_benefit_calculator_stepByStep_view = NEONDEView.as_view({'post': 'stepByStep'})
+		return neo_and_ndr_benefit_calculator_stepByStep_view(request)
+
+	def test_stepByStep_has_same_numbers_of_records_as_requested_respondents(self):
+		response = self.requestStepByStepInstructions()
+		self.assertEqual(len(self.data_request['respondents']), len(response.data['detail_records']))
+
 	def test_stepByStep_average_indexed_monthly_covered_earning_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
@@ -216,7 +221,7 @@ class NEONDEAPITestCase(APITestCase):
 			expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
 
 	def test_stepByStep_basic_primary_insurance_amount_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
@@ -226,7 +231,7 @@ class NEONDEAPITestCase(APITestCase):
 		)
 		stepByStep = {'person_id': person.id, 
 			'basic_primary_insurance_amount_instructions': 
-				basic_pia.stepByStep(average_indexed_monthly_earning=Money(amount=1071.43), year_of_coverage=0)}
+				basic_pia.stepByStep(average_indexed_monthly_earning=Money(amount=Decimal(1071.43)), year_of_coverage=0)}
 		serializer = DetailRecordSerializer(stepByStep)
 		expected_response = {'detail_record': serializer.data}
 
@@ -234,7 +239,7 @@ class NEONDEAPITestCase(APITestCase):
 			expected_response['detail_record']['basic_primary_insurance_amount_instructions'])
 
 	def test_stepByStep_wep_primary_insurance_amount_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
@@ -244,7 +249,7 @@ class NEONDEAPITestCase(APITestCase):
 		)
 		stepByStep = {'person_id': person.id, 
 			'wep_primary_insurance_amount_instructions': 
-				wep_pia.stepByStep(average_indexed_monthly_earning=Money(amount=1071.43), year_of_coverage=15)}
+				wep_pia.stepByStep(average_indexed_monthly_earning=Money(amount=Decimal(1071.43)), year_of_coverage=15)}
 		serializer = DetailRecordSerializer(stepByStep)
 		expected_response = {'detail_record': serializer.data}
 
@@ -252,7 +257,7 @@ class NEONDEAPITestCase(APITestCase):
 			expected_response['detail_record']['wep_primary_insurance_amount_instructions'])
 
 	def test_stepByStep_average_indexed_monthly_non_covered_earning_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
@@ -263,7 +268,7 @@ class NEONDEAPITestCase(APITestCase):
 		non_covered_earnings = Earning.objects.filter(
 			type_of_earning=Earning.NONCOVERED, time_period=Earning.YEARLY, person=person)
 		taxable_non_covered_earnings = []
-		for non_covered_earning in non_covered_earnings:
+		for non_covered_earning in non_covered_earnings: # does maxtax return decimal or just float/int?
 			taxable_non_covered_earnings.append(maxtax.calculate(non_covered_earning))
 		stepByStep = {'person_id': person.id, 
 			'average_indexed_monthly_non_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_non_covered_earnings)}
@@ -273,30 +278,31 @@ class NEONDEAPITestCase(APITestCase):
 		self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_non_covered_earning_instructions'], 
 			expected_response['detail_record']['average_indexed_monthly_non_covered_earning_instructions'])
 
-	# def test_stepByStep_monthly_non_covered_pension_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_monthly_non_covered_pension_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		instructions = [
+			Instruction(description='Get average indexed monthly non covered earning',
+				expressions=[f'average indexed monthly non covered earning = $2,380.95']),
+			Instruction(description='Get fraction of non covered AIME to non covered pension',
+				expressions=[f'fraction of non covered AIME to non covered pension = 0.67']),
+			Instruction(description='Multiply average indexed monthly non covered earning with the fraction that was coverted from non covered AIME to non covered pension', 
+				expressions=[
+					'monthly_non_covered_pension = average indexed monthly non covered earning x fraction of non covered AIME to non covered pension',
+					f'monthly_non_covered_pension = $2,380.95 x 0.67',
+					f'monthly_non_covered_pension = $1,595.24'])] 
+		stepByStep = {'person_id': person.id, 
+			'monthly_non_covered_pension_instructions': instructions}
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['monthly_non_covered_pension_instructions'], 
+			expected_response['detail_record']['monthly_non_covered_pension_instructions'])
 
 	def test_stepByStep_wep_reduction_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
@@ -304,144 +310,144 @@ class NEONDEAPITestCase(APITestCase):
 			Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
 		stepByStep = {'person_id': person.id, 
 			'wep_reduction_instructions': wep.stepByStep(
-				primary_insurance_amount=Money(amount=839.30), 
-				wep_primary_insurance_amount=Money(amount=411.30),
-				monthly_non_covered_pension=Money(amount=1595.24))}
+				primary_insurance_amount=Money(amount=Decimal(839.30)), 
+				wep_primary_insurance_amount=Money(amount=Decimal(411.30)),
+				monthly_non_covered_pension=Money(amount=Decimal(1595.24)))}
 		serializer = DetailRecordSerializer(stepByStep)
 		expected_response = {'detail_record': serializer.data}
 
 		self.assertEqual(response.data['detail_records'][0]['wep_reduction_instructions'], 
 			expected_response['detail_record']['wep_reduction_instructions'])
 
-	# def test_stepByStep_final_primary_insurance_amount_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_final_primary_insurance_amount_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		instructions = [
+			Instruction(description='Get primary insurance amount', expressions=[f'primary insurance amount = $839.30']),
+			Instruction(description='Get windfall elimination provision amount', expressions=[f'windfall elimination provision amount = $428.00']),
+			Instruction(description='Recalculate primary insurance amount by reducing the primary insurance amount with the windfall elimination provision amount', 
+				expressions=[
+					'primary insurance amount  = primary insurance amount - windfall elimination provision',
+					f'primary insurance amount  = $839.30 - $428.00',
+					f'primary insurance amount = $411.30'])]
+		stepByStep = {'person_id': person.id, 
+			'final_primary_insurance_amount_instructions': instructions}
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['final_primary_insurance_amount_instructions'], 
+			expected_response['detail_record']['final_primary_insurance_amount_instructions'])
 
 	def test_stepByStep_delay_retirement_credit_instructions(self):
-		response = requestStepByStepInstructions()
+		response = self.requestStepByStepInstructions()
 
 		year = 2016
 		person = Person.objects.get(id=1)
 		drc = DelayRetirementCredit.objects.get(
 			Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
+		instructions = drc.stepByStep(year_of_birth=1954, normal_retirement_age=66.0, delayed_retirement_age=70.0)
+		instructions.append(
+			Instruction(description='Get respondent\'s delay retirement credit',
+				expressions=['respondent\'s delay retirement credit = 0.00%']))
+		instructions.append(
+			Instruction(description='Cap Delay Retirement Credit', 
+				expressions=[
+					'delay retirement credit = min(max delay retirement credit, respondent\'s delay retirement credit',
+					'delay retirement credit = min(40.00%, 0.00%)',
+					'delay retirement credit = 0.00%']))
 		stepByStep = {'person_id': person.id, 
-			'delay_retirement_credit_instructions': drc.stepByStep(
-				year_of_birth=1954, normal_retirement_age=66.0, delayed_retirement_age=70)} # worried about 66.0 vs 66?
+			'delay_retirement_credit_instructions': instructions} 
 		serializer = DetailRecordSerializer(stepByStep)
 		expected_response = {'detail_record': serializer.data}
 
 		self.assertEqual(response.data['detail_records'][0]['delay_retirement_credit_instructions'], 
 			expected_response['detail_record']['delay_retirement_credit_instructions'])
-		# look at views.py 244 256 there is 2 more instructions
 
-	# def test_stepByStep_early_retirement_reduction_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_early_retirement_reduction_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		err = EarlyRetirementBenefitReduction.objects.get(
+			Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)) &
+			Q(benefit_type=EarlyRetirementBenefitReduction.PRIMARY))
+		instructions = err.stepByStep(normal_retirement_age=66.0, early_retirement_age=62.0)
+		instructions.append(
+			Instruction(description='Get respondent\'s early retirement reduction',
+				expressions=['respondent\'s early retirement reduction = 0.00%']))
+		instructions.append(
+			Instruction(description='Cap Delay Retirement Credit', 
+				expressions=[
+					'early retirement reduction = min(max early retirement reduction, respondent\'s early retirement reduction',
+					'early retirement reduction = min(25.00%, 0.00%)',
+					'early retirement reduction = 0.00%']))
+		stepByStep = {'person_id': person.id, 
+			'early_retirement_reduction_instructions': instructions} 
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['early_retirement_reduction_instructions'], 
+			expected_response['detail_record']['early_retirement_reduction_instructions'])
 
-	# def test_stepByStep_benefit_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_benefit_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		instructions = [
+			Instruction(description='Get delay retirement credit', expressions=[f'delay retirement credit = 0.00%']),
+			Instruction(description='Get early retirement reduction', expressions=[f'early retirement reduction = 0.00%']),
+			Instruction(description='Get primary insurance amount', expressions=[f'primary insurance amount = $411.30']),
+			Instruction(description='Calculate benefit', expressions=[
+				'benefit = primary insurance amount x (1 + (delay retirement credit + early retirement reduction))',
+				f'benefit = $411.30 x (1 + (0.00% + 0.00%))',
+				f'benefit = $411.30 x 100.00%',
+				f'benefit = $411.30'])]
+		stepByStep = {'person_id': person.id, 
+			'benefit_instructions': instructions}
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['benefit_instructions'], 
+			expected_response['detail_record']['benefit_instructions'])
 
-	# def test_stepByStep_government_pension_offset_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_government_pension_offset_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		gpo = GovernmentPensionOffset.objects.get(
+			Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
+		stepByStep = {'person_id': person.id, 
+			'government_pension_offset_instructions': gpo.stepByStep(monthly_non_covered_pension=Money(amount=Decimal(1595.24)))}
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['government_pension_offset_instructions'], 
+			expected_response['detail_record']['government_pension_offset_instructions'])
 
-	# def test_stepByStep_spousal_insurance_benefit_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	def test_stepByStep_spousal_insurance_benefit_instructions(self):
+		response = self.requestStepByStepInstructions()
 
-	# 	year = 2016
-	# 	person = Person.objects.get(id=1)
-	# 	maxtax = MaximumTaxableEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-	# 	covered_earnings = Earning.objects.filter(
-	# 		type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	taxable_covered_earnings = []
-	# 	for covered_earning in covered_earnings:
-	# 		taxable_covered_earnings.append(maxtax.calculate(covered_earning))
-	# 	stepByStep = {'person_id': person.id, 
-	# 		'average_indexed_monthly_covered_earning_instructions': aime.stepByStep(taxable_earnings=taxable_covered_earnings)}
-	# 	serializer = DetailRecordSerializer(stepByStep)
-	# 	expected_response = {'detail_record': serializer.data}
+		year = 2016
+		person = Person.objects.get(id=1)
+		spousal_insurance_benefit_law = SpousalInsuranceBenefit.objects.get(
+			Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
+		stepByStep = {'person_id': person.id, 
+			'spousal_insurance_benefit_instructions': spousal_insurance_benefit_law.stepByStep(
+			primary_insurance_amount=Money(amount=Decimal(839.30)), 
+			spousal_primary_insurance_amount=Money(amount=Decimal(1829.80)),
+			government_pension_offset=Money(amount=Decimal(1063.49)))}
+		serializer = DetailRecordSerializer(stepByStep)
+		expected_response = {'detail_record': serializer.data}
 
-	# 	self.assertEqual(response.data['detail_records'][0]['average_indexed_monthly_covered_earning_instructions'], 
-	# 		expected_response['detail_record']['average_indexed_monthly_covered_earning_instructions'])
+		self.assertEqual(response.data['detail_records'][0]['spousal_insurance_benefit_instructions'], 
+			expected_response['detail_record']['spousal_insurance_benefit_instructions'])
 
 	# def test_stepByStep_survivor_insurance_benefit_instructions(self):
-	# 	response = requestStepByStepInstructions()
+	# 	response = self.requestStepByStepInstructions()
 
 	# 	year = 2016
 	# 	person = Person.objects.get(id=1)

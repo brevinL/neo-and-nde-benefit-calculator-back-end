@@ -1,5 +1,6 @@
 from datetime import date
 from math import inf, floor
+from decimal import Decimal
 from django.test import TestCase
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,7 +17,8 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		person = Person.objects.get(id=1)
 		for i in range(0, years_of_covered_earnings):
 			Earning.objects.create(money=Money.objects.create(amount=30000), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), amount=118500)
+		max_tax_amount = Money.objects.create(amount=Decimal(118500))
+		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), max_money=max_tax_amount)
 		for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):
 			taxable_earnings.append(maxtax.calculate(earning))
 		aime = AverageIndexedMonthlyEarning.objects.get(
@@ -66,7 +68,8 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		Earning.objects.create(money=Money.objects.create(amount=50787), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
 		Earning.objects.create(money=Money.objects.create(amount=50931), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
 		Earning.objects.create(money=Money.objects.create(amount=53880), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2018, 1, 1), end_date=date(2018, 12, 31), amount=128400)
+		max_tax_amount = Money.objects.create(amount=Decimal(118500))
+		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2018, 1, 1), end_date=date(2018, 12, 31), max_money=max_tax_amount)
 
 		taxable_earnings = []
 		for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):

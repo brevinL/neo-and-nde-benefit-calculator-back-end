@@ -11,6 +11,9 @@ class DelayRetirementCredit(DelayRetirementCredit):
 	def stepByStep(self, year_of_birth, normal_retirement_age, delayed_retirement_age):
 		stepByStep = []
 
+		normal_retirement_age = float(normal_retirement_age)
+		delayed_retirement_age = float(delayed_retirement_age)
+		
 		stepByStep.append(Instruction('Get normal retirement age',
 			[f'normal retirement age = {normal_retirement_age}']))
 

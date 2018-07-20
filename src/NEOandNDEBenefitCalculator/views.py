@@ -247,32 +247,32 @@ class NEONDEView(viewsets.ViewSet):
 			delayed_retirement_age=benefit_rules.drc_law.age_limit)
 		detail_record.delay_retirement_credit_instructions.append(
 			Instruction(description='Get respondent\'s delay retirement credit',
-				expressions=[f'respondent\'s delay retirement credit = {respondent.delay_retirement_credit}']))
+				expressions=[f'respondent\'s delay retirement credit = {percentage(respondent.delay_retirement_credit)}']))
 		detail_record.delay_retirement_credit_instructions.append(
 			Instruction(description='Cap Delay Retirement Credit', 
 				expressions=[
-					'delay retirement credit = min(delay retirement credit, respondent\'s delay retirement credit',
-					f'delay retirement credit = min({beneficiary_record.max_delay_retirement_credit}, {respondent.delay_retirement_credit}',
-					f'delay retirement credit = {beneficiary_record.delay_retirement_credit}'])) 
+					'delay retirement credit = min(max delay retirement credit, respondent\'s delay retirement credit',
+					f'delay retirement credit = min({percentage(beneficiary_record.max_delay_retirement_credit)}, {percentage(respondent.delay_retirement_credit)})',
+					f'delay retirement credit = {percentage(beneficiary_record.delay_retirement_credit)}'])) 
 		detail_record.early_retirement_reduction_instructions = benefit_rules.primary_err_law.stepByStep(normal_retirement_age=beneficiary_record.normal_retirement_age, 
 			early_retirement_age=beneficiary_record.earliest_retirement_age)
 		detail_record.early_retirement_reduction_instructions.append(
 			Instruction(description='Get respondent\'s early retirement reduction',
-				expressions=[f'respondent\'s early retirement reduction = {respondent.early_retirement_reduction}']))
+				expressions=[f'respondent\'s early retirement reduction = {percentage(respondent.early_retirement_reduction)}']))
 		detail_record.early_retirement_reduction_instructions.append(
 			Instruction(description='Cap Delay Retirement Credit', 
 				expressions=[
-					'early retirement reduction = min(early retirement reduction, respondent\'s early retirement reduction',
-					f'early retirement reduction = min({beneficiary_record.max_early_retirement_reduction}, {respondent.early_retirement_reduction}',
-					f'early retirement reduction = {beneficiary_record.early_retirement_reduction}']))
+					'early retirement reduction = min(max early retirement reduction, respondent\'s early retirement reduction',
+					f'early retirement reduction = min({percentage(beneficiary_record.max_early_retirement_reduction)}, {percentage(respondent.early_retirement_reduction)})',
+					f'early retirement reduction = {percentage(beneficiary_record.early_retirement_reduction)}']))
 		detail_record.benefit_instructions = [
-			Instruction(description='Get delay retirement credit', expressions=[f'delay retirement credit = {beneficiary_record.delay_retirement_credit}']),
-			Instruction(description='Get early retirement reduction', expressions=[f'early retirement reduction = {beneficiary_record.early_retirement_reduction}']),
+			Instruction(description='Get delay retirement credit', expressions=[f'delay retirement credit = {percentage(beneficiary_record.delay_retirement_credit)}']),
+			Instruction(description='Get early retirement reduction', expressions=[f'early retirement reduction = {percentage(beneficiary_record.early_retirement_reduction)}']),
 			Instruction(description='Get primary insurance amount', expressions=[f'primary insurance amount = {beneficiary_record.final_primary_insurance_amount}']),
 			Instruction(description='Calculate benefit', expressions=[
 				'benefit = primary insurance amount x (1 + (delay retirement credit + early retirement reduction))',
-				f'benefit = {beneficiary_record.final_primary_insurance_amount} x (1 + ({beneficiary_record.delay_retirement_credit} + {beneficiary_record.early_retirement_reduction}))',
-				f'benefit = {beneficiary_record.final_primary_insurance_amount} x {1 + (beneficiary_record.delay_retirement_credit + beneficiary_record.early_retirement_reduction)}',
+				f'benefit = {beneficiary_record.final_primary_insurance_amount} x (1 + ({percentage(beneficiary_record.delay_retirement_credit)} + {percentage(beneficiary_record.early_retirement_reduction)}))',
+				f'benefit = {beneficiary_record.final_primary_insurance_amount} x {percentage(1 + (beneficiary_record.delay_retirement_credit + beneficiary_record.early_retirement_reduction))}',
 				f'benefit = {beneficiary_record.benefit}'])]
 		return detail_record
 
