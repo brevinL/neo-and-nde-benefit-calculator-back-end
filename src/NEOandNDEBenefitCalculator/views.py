@@ -8,7 +8,7 @@ from rest_framework.decorators import list_route
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import NotFound
-from BenefitRule.models import *
+from BenefitRule.models import Person, Money, Relationship, Record
 from NEOandNDEBenefitCalculator.models import *
 from .serializers import *
 

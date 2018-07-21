@@ -2,7 +2,6 @@ from datetime import date
 from math import inf
 import os
 import django
-from BenefitRule.models import *
 
 def populate_normal_retirement_age_law():
 	nra, created = RetirementAge.objects.get_or_create(start_date=date.min, end_date=date.max,
@@ -109,6 +108,7 @@ def populate_wep_primary_insurance_amount_law():
 if __name__ == '__main__':
 	os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BenefitCalculator.settings')
 	django.setup()
+	from BenefitRule.models import *
 	print("Starting Benefit Rule population script...")
 	populate_normal_retirement_age_law()
 	populate_early_retirement_age_law()

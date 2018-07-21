@@ -8,6 +8,7 @@ from NEOandNDEBenefitCalculator.models import *
 from NEOandNDEBenefitCalculator.serializers import *
 from NEOandNDEBenefitCalculator.views import NEONDEView
 
+# test to not confuse the rules in this module vs the BenefitRule.models
 class NEONDEAPITestCase(APITestCase):
 	fixtures = ['CoveredEarning.json', 'NonCoveredEarning.json', 'Money.json', 'Person.json']
 

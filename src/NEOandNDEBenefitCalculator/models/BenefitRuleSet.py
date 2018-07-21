@@ -1,8 +1,15 @@
 from django.db import models
 # from django.core.exceptions import ValidationError
 # from django.utils.translation import gettext_lazy as _
-from BenefitRule.models import RetirementAge, AverageIndexedMonthlyEarning, PrimaryInsuranceAmount, WindfallEliminationProvision, DelayRetirementCredit, EarlyRetirementBenefitReduction, GovernmentPensionOffset, SpousalInsuranceBenefit, SurvivorInsuranceBenefit
-
+from .RetirementAge import RetirementAge
+from .AIME import AverageIndexedMonthlyEarning
+from .DRC import DelayRetirementCredit
+from .ERR import EarlyRetirementBenefitReduction
+from .PIA import PrimaryInsuranceAmount
+from .SpousalInsuranceBenefit import SpousalInsuranceBenefit
+from .WEP import WindfallEliminationProvision
+from .GPO import GovernmentPensionOffset
+from .SurvivorInsuranceBenefit import SurvivorInsuranceBenefit
 # def validate_normal_retirement_age_law(value):
 # 	print(value)
 # 	if value % 2 != 0:
