@@ -52,4 +52,11 @@ class SpousalInsuranceBenefit(SpousalInsuranceBenefit):
 			f'spousal insurance benefit = {spousal_insurance_benefit} - {government_pension_offset}',
 			f'spousal insurance benefit = {spousal_insurance_benefit - government_pension_offset}']))
 
+		spousal_insurance_benefit -= government_pension_offset
+
+		stepByStep.append(Instruction('Cap spousal insurance benefit',
+			['spousal insurance benefit = max($0.00, spousal insurance benefit)',
+			f'spousal insurance benefit = max($0.00, {spousal_insurance_benefit})',
+			f'spousal insurance benefit = {max(Money(amount=0), spousal_insurance_benefit)}']))
+
 		return stepByStep

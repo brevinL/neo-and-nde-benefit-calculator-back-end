@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from BenefitRule.models import Person, Money
 from NEOandNDEBenefitCalculator.models import SpousalInsuranceBenefit, Instruction
 
+# need to create test for negative spousal benefit
 class SpousalInsuranceBenefitTestCase(TestCase):
 	def setUp(self):
 		Person.objects.create(id=1, year_of_birth=1954)
@@ -66,7 +67,11 @@ class SpousalInsuranceBenefitTestCase(TestCase):
 			Instruction(description='Subtract the government pension offset from spousal insurance benefit',
 				expressions=['spousal insurance benefit = spousal insurance benefit - government pension offset',
 					f'spousal insurance benefit = $235.50 - $213.00',
-					f'spousal insurance benefit = $22.50'])
+					f'spousal insurance benefit = $22.50']),
+			Instruction('Cap spousal insurance benefit',
+				['spousal insurance benefit = max($0.00, spousal insurance benefit)',
+				'spousal insurance benefit = max($0.00, $22.50)',
+				'spousal insurance benefit = $22.50'])
 		]
 		self.assertEqual(instructions, spousal_insurance_benefit.stepByStep(
 			primary_insurance_amount=Money(amount=679), 

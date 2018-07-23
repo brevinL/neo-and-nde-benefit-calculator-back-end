@@ -24,6 +24,7 @@ class RespondentListSerializer(serializers.ListSerializer):
 		
 class RespondentSerializer(serializers.ModelSerializer):
 	id = serializers.IntegerField() 
+	# alias = serializers.CharField(allow_null=True)
 	annual_covered_earning = MoneySerializer()
 	annual_non_covered_earning = MoneySerializer()
 	spousal_early_retirement_reduction = MoneySerializer()
