@@ -77,12 +77,14 @@ class NEONDEView(viewsets.ViewSet):
 		detail_record_serializer = DetailRecordSerializer(detail_records, many=True)
 		return Response({'detail_records': detail_record_serializer.data}, content_type='application/json;charset=utf-8')
 
+	# cannot handle failures atm, must handle the response to be directed to the @post and not here
 	def serializeRespondents(self, data):
 		respondent_serializer = RespondentSerializer(data=data, many=True, allow_empty=False)
 		if(not respondent_serializer.is_valid()):
 			return Response(respondent_serializer.errors, status.HTTP_400_BAD_REQUEST)
 		return respondent_serializer.create(respondent_serializer.validated_data)
 
+	# cannot handle failures atm
 	def serializeRelationships(self, data):
 		relationship_serializer = RelationshipSerializer(data=data, many=True, allow_empty=False)
 		if not relationship_serializer.is_valid():
