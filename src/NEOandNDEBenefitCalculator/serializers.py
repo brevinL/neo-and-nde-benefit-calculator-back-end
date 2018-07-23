@@ -15,10 +15,6 @@ class RespondentListSerializer(serializers.ListSerializer):
 			item['annual_covered_earning'] = Money(amount=annual_covered_earning.get('amount', 0))
 			annual_non_covered_earning = item.get('annual_non_covered_earning')
 			item['annual_non_covered_earning'] = Money(amount=annual_non_covered_earning.get('amount', 0))
-			spousal_early_retirement_reduction = item.get('spousal_early_retirement_reduction')
-			item['spousal_early_retirement_reduction'] = Money(amount=spousal_early_retirement_reduction.get('amount', 0))
-			survivor_early_retirement_reduction = item.get('survivor_early_retirement_reduction')
-			item['survivor_early_retirement_reduction'] = Money(amount=survivor_early_retirement_reduction.get('amount', 0))
 			respondents.append(Respondent(**item))
 		return respondents
 		
@@ -27,8 +23,8 @@ class RespondentSerializer(serializers.ModelSerializer):
 	# alias = serializers.CharField(allow_null=True)
 	annual_covered_earning = MoneySerializer()
 	annual_non_covered_earning = MoneySerializer()
-	spousal_early_retirement_reduction = MoneySerializer()
-	survivor_early_retirement_reduction = MoneySerializer()
+	# spousal_early_retirement_reduction = MoneySerializer()
+	# survivor_early_retirement_reduction = MoneySerializer()
 
 	class Meta:
 		model = Respondent

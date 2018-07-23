@@ -9,8 +9,8 @@ class Respondent(Person):
 	fraction_of_non_covered_aime_to_non_covered_pension = models.FloatField()
 	early_retirement_reduction = models.FloatField()
 	delay_retirement_credit = models.FloatField()
-	spousal_early_retirement_reduction = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, related_name="spousal_early_retirement_reduction") 
-	survivor_early_retirement_reduction = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, related_name="survivor_early_retirement_reduction") 
+	spousal_early_retirement_reduction = models.FloatField()
+	survivor_early_retirement_reduction = models.FloatField()
 
 	@property
 	def annual_covered_earnings(self):
