@@ -10,9 +10,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import NotFound
 from BenefitRule.models import Person, Money, Relationship, Record
 from NEOandNDEBenefitCalculator.models import *
-from .serializers import *
+from NEOandNDEBenefitCalculator.serializers import *
 
-class NEONDEView(viewsets.ViewSet):
+class CalculatorViewSet(viewsets.ViewSet):
 	renderer_classes = (JSONRenderer, )
 
 	@list_route(methods=['post'])

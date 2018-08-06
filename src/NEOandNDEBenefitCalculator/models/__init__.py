@@ -10,3 +10,4 @@ from .WEP import *
 from .GPO import *
 from .Instruction import *
 from .DetailRecord import *
+from .RespondentRelationship import *

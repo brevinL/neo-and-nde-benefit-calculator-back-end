@@ -10,17 +10,12 @@ from .SpousalInsuranceBenefit import SpousalInsuranceBenefit
 from .WEP import WindfallEliminationProvision
 from .GPO import GovernmentPensionOffset
 from .SurvivorInsuranceBenefit import SurvivorInsuranceBenefit
-# def validate_normal_retirement_age_law(value):
-# 	print(value)
-# 	if value % 2 != 0:
-# 		raise ValidationError(
-# 			_('%(value)s is not an even number'),
-# 			params={'value': value},
-# 		)
 
 # experiment with validators if possible with foreign key
 # https://docs.djangoproject.com/en/2.0/ref/validators/
 class BenefitRuleSet(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
 	earliest_retirement_age_law = models.ForeignKey(RetirementAge, on_delete=models.CASCADE, null=True, related_name='earliest_retirement_age_law')
 	normal_retirement_age_law = models.ForeignKey(RetirementAge, on_delete=models.CASCADE, null=True, related_name='normal_retirement_age_law')
 	aime_law = models.ForeignKey(AverageIndexedMonthlyEarning, on_delete=models.CASCADE, null=True, related_name='aime_law')

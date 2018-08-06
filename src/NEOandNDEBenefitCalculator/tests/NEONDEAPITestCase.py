@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase, APIRequestFactory
 from BenefitRule.models import *
 from NEOandNDEBenefitCalculator.models import *
 from NEOandNDEBenefitCalculator.serializers import *
-from NEOandNDEBenefitCalculator.views import NEONDEView
+from NEOandNDEBenefitCalculator.views import CalculatorViewSet
 
 # test to not confuse the rules in this module vs the BenefitRule.models
 class NEONDEAPITestCase(APITestCase):
@@ -15,7 +15,6 @@ class NEONDEAPITestCase(APITestCase):
 	data_request = {
 		'respondents': [
 			{
-				'id': 1,
 				'year_of_birth': 1954,
 				'years_of_covered_earnings': 15,
 				'annual_covered_earning': {'amount': 30000.00},
@@ -28,7 +27,6 @@ class NEONDEAPITestCase(APITestCase):
 				'survivor_early_retirement_reduction': 0.00
 			},
 			{
-				'id': 2,
 				'year_of_birth': 1954,
 				'years_of_covered_earnings': 40,
 				'annual_covered_earning': {'amount': 50000.00},
@@ -140,7 +138,7 @@ class NEONDEAPITestCase(APITestCase):
 		factory = APIRequestFactory()
 		url = '/api/neo-and-neo-benefit-calculator/summary' # reverse('life-table-api:lifetable-Sx')
 		request = factory.post(url, self.data_request, format='json') 
-		neo_and_ndr_benefit_calculator_summary_view = NEONDEView.as_view({'post': 'summary'})
+		neo_and_ndr_benefit_calculator_summary_view = CalculatorViewSet.as_view({'post': 'summary'})
 		response = neo_and_ndr_benefit_calculator_summary_view(request)
 		# https://realpython.com/test-driven-development-of-a-django-restful-api/
 		records = [
@@ -192,7 +190,7 @@ class NEONDEAPITestCase(APITestCase):
 		factory = APIRequestFactory()
 		url = '/api/neo-and-neo-benefit-calculator/stepByStep' # reverse('life-table-api:lifetable-Sx')
 		request = factory.post(url, self.data_request, format='json') 
-		neo_and_ndr_benefit_calculator_stepByStep_view = NEONDEView.as_view({'post': 'stepByStep'})
+		neo_and_ndr_benefit_calculator_stepByStep_view = CalculatorViewSet.as_view({'post': 'stepByStep'})
 		return neo_and_ndr_benefit_calculator_stepByStep_view(request)
 
 	def test_stepByStep_has_same_numbers_of_records_as_requested_respondents(self):

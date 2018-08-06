@@ -29,5 +29,11 @@ class Relationship(models.Model):
 		choices=RELATIONSHIP_TYPE_CHOICES,
 		null=True
 	)
-	start_date = models.DateField(null=True)
-	end_date = models.DateField(null=True)
+	start_date = models.DateField(null=True, blank=True)
+	end_date = models.DateField(null=True, blank=True)
+
+	def getOtherPerson(self, person):
+		if person == self.person1:
+			return self.person2
+		else:
+			return self.person1

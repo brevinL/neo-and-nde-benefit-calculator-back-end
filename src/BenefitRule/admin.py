@@ -10,3 +10,8 @@ admin.site.register(WindfallEliminationProvision)
 admin.site.register(AverageIndexedMonthlyEarning)
 admin.site.register(PrimaryInsuranceAmount)
 admin.site.register(SpousalInsuranceBenefit)
+
+admin.site.register(Record)
+admin.site.register(Money)
+admin.site.register(Person)
+admin.site.register(Relationship)
