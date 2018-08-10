@@ -83,21 +83,21 @@ class RecordManager(models.Manager):
 	# assumes that record is pre created 
 	def calculate_dependent_benefits(self, benefit_rules, beneficiary_record, spousal_beneficiary_record):
 		beneficiary_record.spousal_insurance_benefit = benefit_rules.spousal_insurance_benefit_law.calculate(
-			primary_insurance_amount=beneficiary_basic_primary_insurance_amount, 
-			spousal_primary_insurance_amount=spousal_beneficiary_basic_primary_insurance_amount,
-			government_pension_offset=beneficiary_government_pension_offset) # seperate gpo if spousal insurance benefit before gpo is used somewhere else like basic pia
-		beneficiary_record.save()
+			primary_insurance_amount=beneficiary_record.basic_primary_insurance_amount, 
+			spousal_primary_insurance_amount=spousal_beneficiary_record.basic_primary_insurance_amount,
+			government_pension_offset=beneficiary_record.government_pension_offset) # seperate gpo if spousal insurance benefit before gpo is used somewhere else like basic pia
+		beneficiary_record.spousal_insurance_benefit.save()
 		return beneficiary_record
 
 	# assumes that record is pre created
 	def calculate_survivor_benefits(self, benefit_rules, respondent, beneficiary_record, spousal_beneficiary_record):
 		beneficiary_record.survivor_insurance_benefit = benefit_rules.survivor_insurance_benefit_law.calculate(
-			primary_insurance_amount=beneficiary_benefit, 
-			deceased_spousal_primary_insurance_amount=spousal_beneficiary_basic_primary_insurance_amount, 
+			primary_insurance_amount=beneficiary_record.benefit, 
+			deceased_spousal_primary_insurance_amount=spousal_beneficiary_record.basic_primary_insurance_amount, 
 			survivor_early_retirement_reduction_factor=respondent.survivor_early_retirement_reduction, 
-			spousal_delay_retirement_factor=spousal_beneficiary_delay_retirement_credit,
-			government_pension_offset=beneficiary_government_pension_offset)
-		beneficiary_record.save()
+			spousal_delay_retirement_factor=spousal_beneficiary_record.delay_retirement_credit,
+			government_pension_offset=beneficiary_record.government_pension_offset)
+		beneficiary_record.survivor_insurance_benefit.save()
 		return beneficiary_record
 
 class Record(models.Model):

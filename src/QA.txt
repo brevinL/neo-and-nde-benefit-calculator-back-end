@@ -1,10 +1,2 @@
-Q: Why is B39 = 15? You can get only 1 YOC per year if you meet the threshold per year.
-2016 is 22050. The 15 years before that isnt 22050.
-
-Q: Why is B35 = 11850 when it is multiple annual covered earnings before 2016?
-
-Q: what is non covered aime convereted to non covered pension?
-
-Q: For 2018 these portions are the first $895, the amount between $895 and $5,397, and the amount over $5,397. These dollar amounts are the "bend points" of the 2018 PIA formula. A table shows bend points, for years beginning with 1979, for both the PIA and maximum family benefit formulas.
-
-portions != bendpoints
+http POST http://localhost:8000/api/neo-and-nde-benefit-calculator/respondents/ < sample2.json
+http GET http://localhost:8000/api/neo-and-nde-benefit-calculator/records/summary/?respondent=1

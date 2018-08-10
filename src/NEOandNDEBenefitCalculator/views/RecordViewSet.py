@@ -27,12 +27,11 @@ class RecordViewSet(viewsets.ModelViewSet):
 		# add in the numbers for the other laws to db anyways
 		year = 2016
 		benefit_rules = get_object_or_404(BenefitRuleSet, Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
-
 		record = Record.objects.calculate_retirement_record(benefit_rules=benefit_rules, respondent=respondent)
 
 		respondent_married_relationships = Relationship.objects.filter(Q(person1=respondent) | Q(person2=respondent), relationship_type=Relationship.MARRIED)
 		for relationship in respondent_married_relationships:
-			spouse = relationship.getOtherPerson(person=respondent)
+			spouse = relationship.get_other(content_object=respondent)
 			spouse_record = Record.objects.calculate_retirement_record(benefit_rules=benefit_rules, respondent=spouse)
 			spouse_record = Record.objects.calculate_dependent_benefits(benefit_rules=benefit_rules, beneficiary_record=record, spousal_beneficiary_record=spouse_record)
 			spouse_record = Record.objects.calculate_survivor_benefits(benefit_rules=benefit_rules, respondent=respondent, beneficiary_record=record, spousal_beneficiary_record=spouse_record)

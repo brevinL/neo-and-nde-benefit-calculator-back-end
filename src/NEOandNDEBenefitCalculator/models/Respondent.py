@@ -1,5 +1,6 @@
 from django.db import models
-from BenefitRule.models import Money, Person
+from BenefitRule.models import Money, Person, Relationship
+from django.contrib.contenttypes.fields import GenericRelation
 
 class Respondent(Person):
 	years_of_covered_earnings = models.IntegerField()
@@ -11,6 +12,8 @@ class Respondent(Person):
 	delay_retirement_credit = models.FloatField()
 	spousal_early_retirement_reduction = models.FloatField()
 	survivor_early_retirement_reduction = models.FloatField()
+
+	# relationships = GenericRelation(Relationship, related_query_name='respondents')
 
 	@property
 	def annual_covered_earnings(self):

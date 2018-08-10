@@ -17,11 +17,13 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 from rest_framework.urlpatterns import format_suffix_patterns
+from BenefitRule.routers import BenefitRuleRouter
 from NEOandNDEBenefitCalculator.routers import NEONDERouter
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/benefit-rule/', include(BenefitRuleRouter.urls)), 
     url(r'^api/neo-and-nde-benefit-calculator/', include(NEONDERouter.urls)), 
 ]
 

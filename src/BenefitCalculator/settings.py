@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'generic_relations',
     'BenefitRule.apps.BenefitruleConfig',
     'NEOandNDEBenefitCalculator.apps.NEOandNDEBenefitCalculatorConfig'
 ]
