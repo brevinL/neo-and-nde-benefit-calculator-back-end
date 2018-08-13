@@ -25,8 +25,11 @@ SECRET_KEY = 'st8&efs1i(!4ww15kk_v_-*$76iq=!9kq)dv@i9m%j_xd^d(5j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    '192.168.1.177',
+    '10.30.2.220',
+    'web'
+]
 
 # Application definition
 
@@ -39,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'generic_relations',
     'BenefitRule.apps.BenefitruleConfig',
     'NEOandNDEBenefitCalculator.apps.NEOandNDEBenefitCalculatorConfig'
 ]
@@ -80,11 +84,13 @@ WSGI_APPLICATION = 'BenefitCalculator.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': '~/.mylogin.cnf',
+        },
+        'NAME': 'BenefitCalculator'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -125,20 +131,19 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'TEST_REQUEST_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
     'TEST_REQUEST_PARSER_CLASSES': (
         'rest_framework.renderers.JSONParser',
-    ),
-    
-    'REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework.parsers.JSONParser',
     )
 }
 APPEND_SLASH = False 

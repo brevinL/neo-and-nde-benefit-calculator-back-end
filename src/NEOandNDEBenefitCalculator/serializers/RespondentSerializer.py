@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from BenefitRule.models import Money
 from NEOandNDEBenefitCalculator.models import Respondent
-from .MoneySerializer import MoneySerializer
+from BenefitRule.serializers import MoneySerializer
 
 class RespondentListSerializer(serializers.ListSerializer):
 	def create(self, validated_data):

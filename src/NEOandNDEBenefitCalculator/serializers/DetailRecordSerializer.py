@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from NEOandNDEBenefitCalculator.models import DetailRecord
-from .InstructionSerializer import TaskSerializer, InstructionSerializer, ExpressionSerializer
+from BenefitRule.serializers import TaskSerializer, InstructionSerializer, ExpressionSerializer
 
 class DetailRecordSerializer(serializers.Serializer):
 	person_id = serializers.IntegerField()

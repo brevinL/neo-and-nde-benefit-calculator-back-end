@@ -1,9 +1,9 @@
-from rest_framework import status, viewsets, serializers
-from NEOandNDEBenefitCalculator.models import *
-from NEOandNDEBenefitCalculator.serializers import *
+from rest_framework import viewsets, serializers
+from NEOandNDEBenefitCalculator.models import Respondent
+from NEOandNDEBenefitCalculator.serializers import RespondentSerializer
 from .CustomMixin import CreateListMixin
 
 # fix to able to post only
-class RespondentViewSet(CreateListMixin, viewsets.ModelViewSet):
+class RespondentViewSet(viewsets.ModelViewSet):
 	queryset = Respondent.objects.all()
 	serializer_class = RespondentSerializer

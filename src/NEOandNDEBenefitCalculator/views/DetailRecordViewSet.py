@@ -1,16 +1,12 @@
 from datetime import date
-from math import inf
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max, Q
-from django.shortcuts import render, get_object_or_404
-from rest_framework import status, viewsets, serializers
-from rest_framework.decorators import list_route, action
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, serializers
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
-from rest_framework.exceptions import NotFound
-from BenefitRule.models import Person, Money, Relationship
-from NEOandNDEBenefitCalculator.models import *
-from NEOandNDEBenefitCalculator.serializers import *
+from BenefitRule.models import Relationship
+from NEOandNDEBenefitCalculator.models import DetailRecord
+from NEOandNDEBenefitCalculator.serializers import DetailRecordSerializer
 
 class DetailRecordViewSet(viewsets.ModelViewSet):
 	queryset = DetailRecord.objects.all()
