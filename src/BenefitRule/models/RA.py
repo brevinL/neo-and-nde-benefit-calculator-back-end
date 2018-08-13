@@ -1,9 +1,8 @@
 from math import isinf
 from django.db import models
-from .BenefitRule import BenefitRule
 
 # https://www.ssa.gov/oact/progdata/nra.html
-class RetirementAge(BenefitRule):
+class RetirementAge(models.Model):
 	EARLIEST = 'E'
 	NORMAL = 'N'
 	LATEST = 'D'

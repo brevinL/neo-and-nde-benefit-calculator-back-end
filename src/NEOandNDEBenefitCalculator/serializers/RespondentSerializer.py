@@ -24,9 +24,5 @@ class RespondentSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Respondent
-		fields = ('id', 'year_of_birth', 'years_of_covered_earnings', 'annual_covered_earning',
-			'years_of_non_covered_earnings', 'annual_non_covered_earning',
-			'fraction_of_non_covered_aime_to_non_covered_pension',
-			'early_retirement_reduction', 'delay_retirement_credit',
-			'spousal_early_retirement_reduction', 'survivor_early_retirement_reduction')
+		fields = '__all__'
 		list_serializer_class = RespondentListSerializer

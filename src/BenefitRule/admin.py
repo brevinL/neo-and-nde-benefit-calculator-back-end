@@ -15,3 +15,9 @@ admin.site.register(Record)
 admin.site.register(Money)
 admin.site.register(Person)
 admin.site.register(Relationship)
+
+admin.site.register(BenefitRule)
+
+admin.site.register(Task)
+admin.site.register(Instruction)
+admin.site.register(Expression)

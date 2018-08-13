@@ -18,9 +18,4 @@ class RecordSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Record
-		fields = ('person_id', 'earliest_retirement_age', 'normal_retirement_age',
-			'average_indexed_monthly_covered_earning', 'basic_primary_insurance_amount',
-			'wep_primary_insurance_amount', 'average_indexed_monthly_non_covered_earning',
-			'monthly_non_covered_pension', 'wep_reduction', 'final_primary_insurance_amount',
-			'delay_retirement_credit', 'early_retirement_reduction', 'benefit', 'government_pension_offset',
-			'spousal_insurance_benefit', 'survivor_insurance_benefit')
+		fields = '__all__'

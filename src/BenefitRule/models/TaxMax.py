@@ -1,10 +1,9 @@
 from django.db import models
-from .BenefitRule import BenefitRule
 from .Earning import Earning
 from .Money import Money
 
 # https://www.ssa.gov/planners/maxtax.html
-class MaximumTaxableEarning(BenefitRule): # should be foregin key to money to get the decimal amount
+class MaximumTaxableEarning(models.Model): # should be foregin key to money to get the decimal amount
 	# amount = models.IntegerField()
 	max_money = models.ForeignKey(Money, on_delete=models.CASCADE)
 

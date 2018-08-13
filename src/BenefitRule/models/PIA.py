@@ -1,8 +1,8 @@
 from math import isinf, inf, floor
 from django.db import models
-from .BenefitRule import BenefitRule
 from .Money import Money
 from .Utilities import ordinal
+from .Instruction import Task
 
 # https://www.ssa.gov/oact/cola/piaformula.html
 # https://www.ssa.gov/oact/cola/bendpoints.html
@@ -13,7 +13,7 @@ A table shows bend points, for years beginning with 1979, for both the PIA and m
 
 bendpoints != portions
 '''
-class PrimaryInsuranceAmount(BenefitRule):
+class PrimaryInsuranceAmount(models.Model):
 	WEP = 'W'
 	BASIC = 'B'
 	TYPE_OF_PRIMARY_INSURANCE_FORUMLA_CHOICES = (
@@ -42,6 +42,68 @@ class PrimaryInsuranceAmount(BenefitRule):
 			primary_insurance_amount += max(Money(amount=0), factor.calculate(year_of_coverage) * (min(average_indexed_monthly_earning, max_dollar) - min_dollar))
 			
 		return floor(primary_insurance_amount * 10) / 10
+
+	def stepByStep(self, average_indexed_monthly_earning, year_of_coverage):
+		task = Task.objects.create()
+
+		instruction = task.instruction_set.create(description=f'Get average indexed monthly earning', order=1)
+		instruction.expression_set.create(description=f'average indexed monthly earning = {average_indexed_monthly_earning}', order=1)
+
+		bendpoints = self.bendpoints.order_by('order')
+		factors = self.factors.order_by('order')
+
+		primary_insurance_amount = Money(amount=0)
+		instruction = task.instruction_set.create(description=f'Initalize total primary insurance amount to 0', order=2)
+		instruction.expression_set.create(description=f'primary insurance amount = {primary_insurance_amount}', order=1)
+
+		for index, factor in enumerate(factors):
+			min_dollar = Money(amount=bendpoints[index].min_dollar_amount)
+			max_dollar = Money(amount=bendpoints[index].max_dollar_amount)
+
+			if isinf(min_dollar.amount) and not isinf(max_dollar.amount):
+				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
+					f'average indexed monthly earning up to {max_dollar} to ' \
+					f'total primary insurance amount'
+			elif not isinf(min_dollar.amount) and isinf(max_dollar.amount):
+				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
+					f'average indexed monthly earning above {min_dollar} to ' \
+					f'total primary insurance amount'
+			elif not (isinf(min_dollar.amount) and isinf(max_dollar.amount)):
+				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
+					f'average indexed monthly earning between {min_dollar} and ' \
+					f'{max_dollar} to total primary insurance amount'
+			elif isinf(min_dollar.amount) and isinf(max_dollar.amount):
+				description = f'Add {factor.calculate(year_of_coverage) * 100} percent of all his/her ' \
+					f'average indexed monthly earning to total primary insurance amount'
+			else:
+				description = ''
+
+			instruction = task.instruction_set.create(description=description, order=index + 2)
+
+			if isinf(min_dollar.amount):
+				min_dollar = Money(amount=0)
+			elif isinf(max_dollar.amount):
+				max_dollar = Money(amount=0)
+
+			instruction.expression_set.create(description=f'primary insurance amount = ' \
+				f'primary insurance amount + ' \
+				f'max($0.00, factor x ( min(average indexed monthly earning, ' \
+				'minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
+			instruction.expression_set.create(description=f'primary insurance amount = max($0.00, {primary_insurance_amount} + ' \
+				f'{factor.calculate(year_of_coverage)} x ' \
+				f'( min({average_indexed_monthly_earning}, {max_dollar}) - {min_dollar} ))', order=2)
+
+			primary_insurance_amount += max(0, factor.calculate(year_of_coverage) * (min(average_indexed_monthly_earning, max_dollar.amount) - min_dollar.amount))
+
+			instruction.expression_set.create(description=f'primary insurance amount = {primary_insurance_amount}', order=3)
+
+		instruction = task.instruction_set.create(description=f'Round total primary insurance amount to the next lower multiple of $0.10 ' \
+			'if it is not already a multiple of $0.10', order=len(factors) + 2)
+		instruction.expression_set.create(description=f'primary insurance amount = floor(primary insurance amount * 10) / 10', order=1)
+		instruction.expression_set.create(description=f'primary insurance amount = floor({primary_insurance_amount} * 10) / 10', order=2)
+		instruction.expression_set.create(description=f'primary insurance amount = {floor(primary_insurance_amount * 10) / 10}', order=3)
+		
+		return task
 
 class BendPoint(models.Model):
 	min_dollar_amount = models.FloatField()

@@ -18,19 +18,24 @@ class Relationship(models.Model):
 	object_id2 = models.PositiveIntegerField()
 	content_object2 = GenericForeignKey('content_type2', 'object_id2')
 
-	HUSBAND = 'H'
-	WIFE = 'W'
+	HUSBAND = 'Husband'
+	WIFE = 'Wife'
+	BENEFICIARY = 'Beneficiary'
+	SPOUSE = 'Spouse' 
 	ROLE_TYPE_CHOICES = (
 		(HUSBAND, 'Husband'),
 		(WIFE, 'Wife'),
+		(BENEFICIARY, 'Beneficiary'),
+		(SPOUSE, 'Spouse')
+
 	)
 	person1_role = models.CharField(
-		max_length=1,
+		max_length=50,
 		choices=ROLE_TYPE_CHOICES,
 		null=True
 	)
 	person2_role = models.CharField(
-		max_length=1,
+		max_length=50,
 		choices=ROLE_TYPE_CHOICES,
 		null=True
 	)

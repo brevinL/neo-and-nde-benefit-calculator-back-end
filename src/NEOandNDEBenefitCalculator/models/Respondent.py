@@ -1,19 +1,17 @@
 from django.db import models
-from BenefitRule.models import Money, Person, Relationship
-from django.contrib.contenttypes.fields import GenericRelation
+from BenefitRule.models import Money, Person
 
 class Respondent(Person):
+	alias = models.TextField(null=False, blank=True)
 	years_of_covered_earnings = models.IntegerField()
-	annual_covered_earning = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, related_name="annual_covered_earning") 
+	annual_covered_earning = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, blank=True, related_name="annual_covered_earning") 
 	years_of_non_covered_earnings = models.IntegerField()
-	annual_non_covered_earning = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, related_name="annual_non_covered_earning") 
+	annual_non_covered_earning = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, blank=True, related_name="annual_non_covered_earning") 
 	fraction_of_non_covered_aime_to_non_covered_pension = models.FloatField()
 	early_retirement_reduction = models.FloatField()
 	delay_retirement_credit = models.FloatField()
 	spousal_early_retirement_reduction = models.FloatField()
 	survivor_early_retirement_reduction = models.FloatField()
-
-	# relationships = GenericRelation(Relationship, related_query_name='respondents')
 
 	@property
 	def annual_covered_earnings(self):

@@ -1,5 +1,5 @@
 from .BenefitRule import *
-# from .Instruction import *
+from .Instruction import *
 from .Person import *
 from .Earning import *
 from .Money import *
