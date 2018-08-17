@@ -1,7 +1,7 @@
 from datetime import date
 from django.test import TestCase
 from django.core.exceptions import ObjectDoesNotExist
-from BenefitRule.models import DelayRetirementCredit, DelayRetirementCreditPiece, Money, MAX_POSITIVE_INTEGER
+from BenefitRule.models import DelayRetirementCredit, DelayRetirementCreditPiece, Money, MAX_POSITIVE_INTEGER, Task
 
 class DelayRetirementCreditTestCase(TestCase):
 	def setUp(self):
@@ -46,60 +46,74 @@ class DelayRetirementCreditTestCase(TestCase):
 		)
 		self.assertAlmostEqual(0.00, drc.calculate(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=60), places=2)
 
-	# def test_stepByStep_no_pieces(self):
-	# 	drc = DelayRetirementCredit.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), age_limit=70)
-	# 	with self.assertRaises(ObjectDoesNotExist):
-	# 		drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=80.0)
+	def test_stepByStep_no_pieces(self):
+		drc = DelayRetirementCredit.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), age_limit=70)
+		with self.assertRaises(ObjectDoesNotExist):
+			drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=80.0)
 
-	# def test_stepByStep_no_delay_retirement(self):
-	# 	drc = DelayRetirementCredit.objects.get(
-	# 		start_date__lte=date(2016, 1, 1), 
-	#		end_date__gte=date(2016, 12, 31)
-	# 	)
-	# 	instructions = [
-	# 		Instruction(description='Get normal retirement age',
-	# 			expressions=['normal retirement age = 67.0']),
-	# 		Instruction(description='Get delayed retirement age',
-	# 			expressions=['delayed retirement age = 67.0']),
-	# 		Instruction(description='Determine if person is eligible for delay retirement credit', 
-	# 			expressions=['normal retirement age < delayed retirement age?',
-	# 				'67.0 < 67.0?',
-	# 				'False']),
-	# 		Instruction(description='Set delay retirement benefit percentage increase to zero',
-	# 			expressions=['delay retirement benefit percentage increase = 0.00%'])
-	# 	]
-	# 	self.assertEqual(instructions, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=67.0))
+	def test_stepByStep_no_delay_retirement(self):
+		drc = DelayRetirementCredit.objects.get(
+			start_date__lte=date(2016, 1, 1), 
+			end_date__gte=date(2016, 12, 31)
+		)
+		expected_task = Task.objects.create()
+		instruction = expected_task.instruction_set.create(description='Get normal retirement age', order=1)
+		instruction.expression_set.create(description='normal retirement age = 67.0', order=1)
+		instruction = expected_task.instruction_set.create(description='Get delayed retirement age', order=2)
+		instruction.expression_set.create(description='delayed retirement age = 67.0', order=1)
+		instruction = expected_task.instruction_set.create(description='Determine if person is eligible for delay retirement credit', order=3)
+		instruction.expression_set.create(description='normal retirement age < delayed retirement age?', order=1)
+		instruction.expression_set.create(description='67.0 < 67.0?', order=2)
+		instruction.expression_set.create(description='False', order=3)
+		instruction = expected_task.instruction_set.create(description='Set delay retirement benefit percentage increase to zero', order=4)
+		instruction.expression_set.create(description='delay retirement benefit percentage increase = 0.00%', order=1)
 
-	# def test_stepByStep_with_delay_retirement(self):
-	# 	drc = DelayRetirementCredit.objects.get(
-	# 		start_date__lte=date(2016, 1, 1), 
-	#		end_date__gte=date(2016, 12, 31)
-	# 	)
-	# 	instructions = [
-	# 		Instruction(description='Get normal retirement age',
-	# 			expressions=['normal retirement age = 67.0']),
-	# 		Instruction(description='Get delayed retirement age',
-	# 			expressions=['delayed retirement age = 80.0']),
-	# 		Instruction(description='Determine if person is eligible for delay retirement credit', 
-	# 			expressions=['normal retirement age < delayed retirement age?',
-	# 				'67.0 < 80.0?',
-	# 				'True']),
-	# 		Instruction('Get delay retirement age limit',
-	# 			['delay retirement age limit = 70.0']),
-	# 		Instruction('Capped retirement age if retirement age is greater than delay retirement age limit',
-	# 			['retirement age = min(delay retirement age limit, retirement age)',
-	# 			'retirement age = min(70.0, 80.0)',
-	# 			'retirement age = 70.0']),
-	# 		Instruction('Determine number of years delayed',
-	# 			['number of years delayed = retirement age + 1 - normal retirement age'
-	# 			'number of years delayed = 70.0 + 1 - 67.0',
-	# 			'number of years delayed = 4.0']),
-	# 		Instruction('Determine number of years delayed',
-	# 			['delay retirement benefit percentage increase = number of years delayed * monthly percent rate of increase',
-	# 			'delay retirement benefit percentage increase = 4.0 * 8.00%',
-	# 			'delay retirement benefit percentage increase = 32.00%'])
-	# 	]
-	# 	self.assertEqual(instructions, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80))
+		delayed_retirement_credit_task = drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=67.0)
+		for expected_instruction in expected_task.instruction_set.all():
+			drc_instruction = delayed_retirement_credit_task.instruction_set.get(order=expected_instruction.order)
+			self.assertEqual(drc_instruction, expected_instruction)
+
+			for expected_expression in expected_instruction.expression_set.all():
+				drc_expression = drc_instruction.expression_set.get(order=expected_expression.order)
+				self.assertEqual(drc_expression, expected_expression)
+
+	def test_stepByStep_with_delay_retirement(self):
+		drc = DelayRetirementCredit.objects.get(
+			start_date__lte=date(2016, 1, 1), 
+			end_date__gte=date(2016, 12, 31)
+		)
+		expected_task = Task.objects.create()
+		instruction = expected_task.instruction_set.create(description='Get normal retirement age', order=1)
+		instruction.expression_set.create(description='normal retirement age = 67.0', order=1)
+		instruction = expected_task.instruction_set.create(description='Get delayed retirement age', order=2)
+		instruction.expression_set.create(description='delayed retirement age = 80.0', order=1)
+		instruction = expected_task.instruction_set.create(description='Determine if person is eligible for delay retirement credit', order=3)
+		instruction.expression_set.create(description='normal retirement age < delayed retirement age?', order=1)
+		instruction.expression_set.create(description='67.0 < 80.0?', order=2)
+		instruction.expression_set.create(description='True', order=3)
+		instruction = expected_task.instruction_set.create(description='Get delay retirement age limit', order=4)
+		instruction.expression_set.create(description='delay retirement age limit = 70.0', order=1)
+		instruction = expected_task.instruction_set.create(description='Capped retirement age if retirement age is greater than delay retirement age limit', order=5)
+		instruction.expression_set.create(description='retirement age = min(delay retirement age limit, retirement age)', order=1)
+		instruction.expression_set.create(description='retirement age = min(70.0, 80.0)', order=2)
+		instruction.expression_set.create(description='retirement age = 70.0', order=3)
+		instruction = expected_task.instruction_set.create(description='Determine number of years delayed', order=6)
+		instruction.expression_set.create(description='number of years delayed = retirement age + 1 - normal retirement age', order=1)
+		instruction.expression_set.create(description='number of years delayed = 70.0 + 1 - 67.0', order=2)
+		instruction.expression_set.create(description='number of years delayed = 4.0', order=3)
+		instruction = expected_task.instruction_set.create(description='Determine number of years delayed', order=7)
+		instruction.expression_set.create(description='delay retirement benefit percentage increase = number of years delayed * monthly percent rate of increase', order=1)
+		instruction.expression_set.create(description='delay retirement benefit percentage increase = 4.0 * 8.00%', order=2)
+		instruction.expression_set.create(description='delay retirement benefit percentage increase = 32.00%', order=3)
+
+		delayed_retirement_credit_task = drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80)
+		for expected_instruction in expected_task.instruction_set.all():
+			drc_instruction = delayed_retirement_credit_task.instruction_set.get(order=expected_instruction.order)
+			self.assertEqual(drc_instruction, expected_instruction)
+
+			for expected_expression in expected_instruction.expression_set.all():
+				drc_expression = drc_instruction.expression_set.get(order=expected_expression.order)
+				self.assertEqual(drc_expression, expected_expression)
 		
 class DelayRetirementCreditPieceTestCase(TestCase):
 	def setUp(self):

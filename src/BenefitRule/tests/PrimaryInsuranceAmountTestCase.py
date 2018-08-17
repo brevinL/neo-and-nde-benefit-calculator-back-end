@@ -67,46 +67,52 @@ class PrimaryInsuranceAmountTestCase(TestCase):
 			result.append(factor.calculate(year_of_coverage=0))
 		self.assertEqual([0.90, 0.32, 0.15], result)
 
-	# def test_stepByStep(self):
-	# 	pia = PrimaryInsuranceAmount.objects.get(
-	# 		start_date__lte=date(2016, 1, 1), 
-	# 		end_date__gte=date(2016, 12, 31),
-	# 		type_of_primary_insurance_formula=PrimaryInsuranceAmount.BASIC
-	# 	)
-	# 	first_pia_factor = max(0, 0 + 0.9 * ( min(1071, 856) - 0 ))
-	# 	second_pia_factor = max(0, 0.32 * ( min(1071, 5157) - 856 ))
-	# 	third_pia_factor = max(0, 0.15 * ( min(1071, 0) - 5157 ))
+	def test_stepByStep(self):
+		pia = PrimaryInsuranceAmount.objects.get(
+			start_date__lte=date(2016, 1, 1), 
+			end_date__gte=date(2016, 12, 31),
+			type_of_primary_insurance_formula=PrimaryInsuranceAmount.BASIC
+		)
+		first_pia_factor = max(0, 0 + 0.9 * ( min(1071, 856) - 0 ))
+		second_pia_factor = max(0, 0.32 * ( min(1071, 5157) - 856 ))
+		third_pia_factor = max(0, 0.15 * ( min(1071, 0) - 5157 ))
 
-	# 	expected_task = Task.objects.create()
-	# 	instruction = expected_task.instruction_set.create(description='Get average indexed monthly earning', order=1)
-	# 	instruction.expression_set.create(description='average indexed monthly earning = $1,071.00', order=1)
-	# 	instruction = expected_task.instruction_set.create(description='Initalize total primary insurance amount to 0', order=2)
-	# 	instruction.expression_set.create(description='primary insurance amount = $0.00', order=1)
-	# 	instruction = expected_task.instruction_set.create(description='Add 90.0 percent his/her average indexed monthly ' \
-	# 		'earning up to $856.00 to total primary insurance amount', order=3)
-	# 	instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
-	# 		'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
-	# 	instruction.expression_set.create(description='primary insurance amount = max($0.00, $0.00 + 0.9 x ( min($1,071.00, $856.00) - $0.00 ))', order=2)
-	# 	instruction.expression_set.create(description='primary insurance amount = $770.40', order=3),
-	# 	instruction = expected_task.instruction_set.create(description='Add 32.0 percent his/her average indexed monthly ' \
-	# 		'earning between $856.00 and $5,157.00 to total primary insurance amount', order=4)
-	# 	instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
-	# 		'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
-	# 	instruction.expression_set.create(description='primary insurance amount = max($0.00, $770.40 + 0.32 x ' \
-	# 		'( min($1,071.00, $5,157.00) - $856.00 ))', order=2)
-	# 	instruction.expression_set.create(description='primary insurance amount = $839.20', order=3),
-	# 	instruction = expected_task.instruction_set.create(description='Add 15.0 percent his/her average indexed monthly ' \
-	# 		'earning above $5,157.00 to total primary insurance amount', order=5)
-	# 	instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
-	# 		'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
-	# 	instruction.expression_set.create(description='primary insurance amount = max($0.00, $839.20 + ' \
-	# 		'0.15 x ( min($1,071.00, $0.00) - $5,157.00 ))', order=2)
-	# 	instruction.expression_set.create(description='primary insurance amount = $839.20', order=3),
-	# 	instruction = expected_task.instruction_set.create(description='Round total primary insurance amount to the next lower multiple of $0.10 ' \
-	# 		'if it is not already a multiple of $0.10', order=6)
-	# 	instruction.expression_set.create(description='primary insurance amount = floor(primary insurance amount * 10) / 10', order=1)
-	# 	instruction.expression_set.create(description='primary insurance amount = floor($839.20 * 10) / 10', order=2)
-	# 	instruction.expression_set.create(description='primary insurance amount = $839.20', order=3)
+		expected_task = Task.objects.create()
+		instruction = expected_task.instruction_set.create(description='Get average indexed monthly earning', order=1)
+		instruction.expression_set.create(description='average indexed monthly earning = $1,071.00', order=1)
+		instruction = expected_task.instruction_set.create(description='Initalize total primary insurance amount to 0', order=2)
+		instruction.expression_set.create(description='primary insurance amount = $0.00', order=1)
+		instruction = expected_task.instruction_set.create(description='Add 90.0 percent his/her average indexed monthly ' \
+			'earning up to $856.00 to total primary insurance amount', order=3)
+		instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
+			'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
+		instruction.expression_set.create(description='primary insurance amount = max($0.00, $0.00 + 0.9 x ( min($1,071.00, $856.00) - $0.00 ))', order=2)
+		instruction.expression_set.create(description='primary insurance amount = $770.40', order=3),
+		instruction = expected_task.instruction_set.create(description='Add 32.0 percent his/her average indexed monthly ' \
+			'earning between $856.00 and $5,157.00 to total primary insurance amount', order=4)
+		instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
+			'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
+		instruction.expression_set.create(description='primary insurance amount = max($0.00, $770.40 + 0.32 x ' \
+			'( min($1,071.00, $5,157.00) - $856.00 ))', order=2)
+		instruction.expression_set.create(description='primary insurance amount = $839.20', order=3),
+		instruction = expected_task.instruction_set.create(description='Add 15.0 percent his/her average indexed monthly ' \
+			'earning above $5,157.00 to total primary insurance amount', order=5)
+		instruction.expression_set.create(description='primary insurance amount = primary insurance amount + ' \
+			'max($0.00, factor x ( min(average indexed monthly earning, minimum dollar amount threshold) - maximum dollar amount threshold ))', order=1)
+		instruction.expression_set.create(description='primary insurance amount = max($0.00, $839.20 + ' \
+			'0.15 x ( min($1,071.00, $0.00) - $5,157.00 ))', order=2)
+		instruction.expression_set.create(description='primary insurance amount = $839.20', order=3),
+		instruction = expected_task.instruction_set.create(description='Round total primary insurance amount to the next lower multiple of $0.10 ' \
+			'if it is not already a multiple of $0.10', order=6)
+		instruction.expression_set.create(description='primary insurance amount = floor(primary insurance amount * 10) / 10', order=1)
+		instruction.expression_set.create(description='primary insurance amount = floor($839.20 * 10) / 10', order=2)
+		instruction.expression_set.create(description='primary insurance amount = $839.20', order=3)
 		
-	# 	primary_insurance_amount_task = pia.stepByStep(average_indexed_monthly_earning=Money(amount=1071), year_of_coverage=0)
-	# 	self.assertEqual(expected_task.instruction_set.all(), primary_insurance_amount_task.instruction_set.all())
+		primary_insurance_amount_task = pia.stepByStep(average_indexed_monthly_earning=Money(amount=1071), year_of_coverage=0)
+		for expected_instruction in expected_task.instruction_set.all():
+			pia_instruction = primary_insurance_amount_task.instruction_set.get(order=expected_instruction.order)
+			self.assertEqual(pia_instruction, expected_instruction)
+
+			for expected_expression in expected_instruction.expression_set.all():
+				pia_expression = pia_instruction.expression_set.get(order=expected_expression.order)
+				self.assertEqual(pia_expression, expected_expression)

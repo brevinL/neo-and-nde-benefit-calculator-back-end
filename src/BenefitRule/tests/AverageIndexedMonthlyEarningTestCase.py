@@ -1,10 +1,9 @@
 from datetime import date
-from math import inf, floor
+from math import floor
 from decimal import Decimal
 from django.test import TestCase
-from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from BenefitRule.models import Person, AverageIndexedMonthlyEarning, Earning, Money, MaximumTaxableEarning, ordinal, currency
+from BenefitRule.models import Task, Person, AverageIndexedMonthlyEarning, Earning, Money, MaximumTaxableEarning
 
 class AverageIndexedMonthlyEarningTestCase(TestCase):
 	def setUp(self):
@@ -21,8 +20,7 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), max_money=max_tax_amount)
 		for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):
 			taxable_earnings.append(maxtax.calculate(earning))
-		aime = AverageIndexedMonthlyEarning.objects.get(
-			Q(start_date__lte=date(2016, 1, 1)) & Q(end_date__gte=date(2016, 12, 31)))
+		aime = AverageIndexedMonthlyEarning.objects.get(start_date__lte=date(2016, 1, 1), end_date__gte=date(2016, 12, 31))
 		self.assertAlmostEqual(1071.00, floor(aime.calculate(taxable_earnings=taxable_earnings)))
 
 	# https://www.ssa.gov/oact/progdata/retirebenefit1.html
@@ -74,47 +72,52 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		taxable_earnings = []
 		for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):
 			taxable_earnings.append(maxtax.calculate(earning))
-		aime = AverageIndexedMonthlyEarning.objects.get(
-			Q(start_date__lte=date(2016, 1, 1)) & Q(end_date__gte=date(2016, 12, 31)))
+		aime = AverageIndexedMonthlyEarning.objects.get(start_date__lte=date(2016, 1, 1), end_date__gte=date(2016, 12, 31))
 		self.assertAlmostEqual(4060.00, floor(aime.calculate(taxable_earnings=taxable_earnings)))
 
-	# def test_stepByStep(self):
-	# 	years_of_covered_earnings = 15
-	# 	taxable_earnings = []
-	# 	person = Person.objects.get(id=1)
-	# 	for i in range(0, years_of_covered_earnings):
-	# 		Earning.objects.create(money=Money.objects.create(amount=30000), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
-	# 	max_tax_amount = Money.objects.create(amount=Decimal(118500))
-	# 	maxtax = MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), max_money=max_tax_amount)
-	# 	for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):
-	# 		taxable_earnings.append(maxtax.calculate(earning))
-	# 	aime = AverageIndexedMonthlyEarning.objects.get(
-	# 		Q(start_date__lte=date(2016, 1, 1)) & Q(end_date__gte=date(2016, 12, 31)))
+	def test_stepByStep(self):
+		years_of_covered_earnings = 15
+		taxable_earnings = []
+		person = Person.objects.get(id=1)
+		for i in range(0, years_of_covered_earnings):
+			Earning.objects.create(money=Money.objects.create(amount=30000), type_of_earning=Earning.COVERED, time_period=Earning.YEARLY, person=person)
+		max_tax_amount = Money.objects.create(amount=Decimal(118500))
+		maxtax = MaximumTaxableEarning.objects.create(start_date=date(2016, 1, 1), end_date=date(2016, 12, 31), max_money=max_tax_amount)
+		for earning in person.earning_set.filter(type_of_earning=Earning.COVERED, time_period=Earning.YEARLY):
+			taxable_earnings.append(maxtax.calculate(earning))
+		aime = AverageIndexedMonthlyEarning.objects.get(start_date__lte=date(2016, 1, 1), end_date__gte=date(2016, 12, 31))
 
-	# 	instructions = [
-	# 		Instruction(description='Get indexed yearly earnings',
-	# 			expressions=['indexed yearly earnings = ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00']),
-	# 		Instruction(description='Sort indexed yearly earnings in descending order', 
-	# 			expressions=['indexed yearly earnings = ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00']),
-	# 		Instruction(description='Get highest 35 indexed yearly earnings', 
-	# 			expressions=['highest 35 indexed yearly earnings = ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-	# 			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00']),
-	# 		Instruction(description='Get average indexed yearly earning', 
-	# 			expressions=[f'average indexed yearly earning = sum of highest 35 indexed yearly earnings ' \
-	# 			'/ number of highest indexed yearly earnings',
-	# 			'average indexed yearly earning = $450,000.00 / 35',
-	# 			'average indexed yearly earning = $12,857.14']),
-	# 		Instruction(description='Divide average indexed yearly earning by 12', 
-	# 			expressions=['average indexed monthly earning = average indexed yearly earning / 12',
-	# 			'average indexed monthly earning = $12,857.14 / 12',
-	# 			'average indexed monthly earning = $1,071.43'])
-	# 	]
-	# 	self.assertEqual(instructions, aime.stepByStep(taxable_earnings=taxable_earnings))
+		expected_task = Task.objects.create()
+		instruction = expected_task.instruction_set.create(description='Get indexed yearly earnings', order=1)
+		instruction.expression_set.create(description='indexed yearly earnings = ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+		instruction = expected_task.instruction_set.create(description='Sort indexed yearly earnings in descending order', order=2)
+		instruction.expression_set.create(description='indexed yearly earnings = ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+		instruction = expected_task.instruction_set.create(description='Get highest 35 indexed yearly earnings', order=3)
+		instruction.expression_set.create(description='highest 35 indexed yearly earnings = ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+		instruction = expected_task.instruction_set.create(description='Get average indexed yearly earning', order=4)
+		instruction.expression_set.create(description=f'average indexed yearly earning = sum of highest 35 indexed yearly earnings ' \
+				'/ number of highest indexed yearly earnings', order=1)
+		instruction.expression_set.create(description='average indexed yearly earning = $450,000.00 / 35', order=2)
+		instruction.expression_set.create(description='average indexed yearly earning = $12,857.14', order=3)
+		instruction = expected_task.instruction_set.create(description='Divide average indexed yearly earning by 12', order=5)
+		instruction.expression_set.create(description='average indexed monthly earning = average indexed yearly earning / 12', order=1)
+		instruction.expression_set.create(description='average indexed monthly earning = $12,857.14 / 12', order=2)
+		instruction.expression_set.create(description='average indexed monthly earning = $1,071.43', order=3)
+
+		average_indexed_monthly_earning_task = aime.stepByStep(taxable_earnings=taxable_earnings)
+		for expected_instruction in expected_task.instruction_set.all():
+			aime_instruction = average_indexed_monthly_earning_task.instruction_set.get(order=expected_instruction.order)
+			self.assertEqual(aime_instruction, expected_instruction)
+
+			for expected_expression in expected_instruction.expression_set.all():
+				aime_expression = aime_instruction.expression_set.get(order=expected_expression.order)
+				self.assertEqual(aime_expression, expected_expression)

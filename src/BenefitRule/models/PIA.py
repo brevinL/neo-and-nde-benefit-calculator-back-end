@@ -1,7 +1,7 @@
 from math import isinf, inf, floor
 from django.db import models
 from .Money import Money
-from .Utilities import ordinal
+from .Utilities import ordinal, MIN_POSITIVE_INTEGER, MAX_POSITIVE_INTEGER
 from .Instruction import Task
 
 # https://www.ssa.gov/oact/cola/piaformula.html
@@ -63,29 +63,29 @@ class PrimaryInsuranceAmount(models.Model):
 			min_dollar = Money(amount=bendpoints[index].min_dollar_amount)
 			max_dollar = Money(amount=bendpoints[index].max_dollar_amount)
 
-			if isinf(min_dollar.amount) and not isinf(max_dollar.amount):
+			if MIN_POSITIVE_INTEGER >= min_dollar.amount and not MAX_POSITIVE_INTEGER <= max_dollar.amount:
 				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
 					f'average indexed monthly earning up to {max_dollar} to ' \
 					f'total primary insurance amount'
-			elif not isinf(min_dollar.amount) and isinf(max_dollar.amount):
+			elif not MIN_POSITIVE_INTEGER >= min_dollar.amount and MAX_POSITIVE_INTEGER <= max_dollar.amount:
 				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
 					f'average indexed monthly earning above {min_dollar} to ' \
 					f'total primary insurance amount'
-			elif not (isinf(min_dollar.amount) and isinf(max_dollar.amount)):
+			elif not (MIN_POSITIVE_INTEGER >= min_dollar.amount and MAX_POSITIVE_INTEGER <= max_dollar.amount):
 				description = f'Add {factor.calculate(year_of_coverage) * 100} percent his/her ' \
 					f'average indexed monthly earning between {min_dollar} and ' \
 					f'{max_dollar} to total primary insurance amount'
-			elif isinf(min_dollar.amount) and isinf(max_dollar.amount):
+			elif MIN_POSITIVE_INTEGER >= min_dollar.amount and MAX_POSITIVE_INTEGER <= max_dollar.amount:
 				description = f'Add {factor.calculate(year_of_coverage) * 100} percent of all his/her ' \
 					f'average indexed monthly earning to total primary insurance amount'
 			else:
 				description = ''
 
-			instruction = task.instruction_set.create(description=description, order=index + 2)
+			instruction = task.instruction_set.create(description=description, order=index + 3)
 
-			if isinf(min_dollar.amount):
+			if MIN_POSITIVE_INTEGER >= min_dollar.amount:
 				min_dollar = Money(amount=0)
-			elif isinf(max_dollar.amount):
+			elif MAX_POSITIVE_INTEGER <= max_dollar.amount:
 				max_dollar = Money(amount=0)
 
 			instruction.expression_set.create(description=f'primary insurance amount = ' \
@@ -101,7 +101,7 @@ class PrimaryInsuranceAmount(models.Model):
 			instruction.expression_set.create(description=f'primary insurance amount = {primary_insurance_amount}', order=3)
 
 		instruction = task.instruction_set.create(description=f'Round total primary insurance amount to the next lower multiple of $0.10 ' \
-			'if it is not already a multiple of $0.10', order=len(factors) + 2)
+			'if it is not already a multiple of $0.10', order=len(factors) + 3)
 		instruction.expression_set.create(description=f'primary insurance amount = floor(primary insurance amount * 10) / 10', order=1)
 		instruction.expression_set.create(description=f'primary insurance amount = floor({primary_insurance_amount} * 10) / 10', order=2)
 		instruction.expression_set.create(description=f'primary insurance amount = {floor(primary_insurance_amount * 10) / 10}', order=3)
@@ -109,8 +109,8 @@ class PrimaryInsuranceAmount(models.Model):
 		return task
 
 class BendPoint(models.Model):
-	min_dollar_amount = models.FloatField() # foreign key
-	max_dollar_amount = models.FloatField() # foreign key
+	min_dollar_amount = models.PositiveIntegerField() # TODO: foreign key to Money model
+	max_dollar_amount = models.PositiveIntegerField() # TODO: foreign key to Money model
 	order = models.PositiveIntegerField()
 	primary_insurance_amount = models.ForeignKey(PrimaryInsuranceAmount, on_delete=models.CASCADE, related_name="bendpoints", null=True)
 
