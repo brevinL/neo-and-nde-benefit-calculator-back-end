@@ -6,6 +6,9 @@ from .Instruction import Task
 # https://www.ssa.gov/oact/cola/Benefits.html
 # https://www.ssa.gov/oact/progdata/retirebenefit1.html
 class AverageIndexedMonthlyEarning(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	max_years_for_highest_indexed_earnings = models.IntegerField()
 
 	# https://obliviousinvestor.com/how-social-security-benefits-are-calculated/

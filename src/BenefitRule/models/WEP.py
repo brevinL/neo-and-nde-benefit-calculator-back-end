@@ -11,6 +11,9 @@ before it is reduced or increased due to early retirement, delayed retirement cr
 cost-of-living adjustments (COLA), or other factors.
 '''
 class WindfallEliminationProvision(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	# why not have pia as a parameter rather than a one to one?
 	def calculate(self, primary_insurance_amount, wep_primary_insurance_amount, monthly_non_covered_pension):
 		# the total WEP reduction is limited to one-half of the pension based on the earnings that were not covered by Social Security

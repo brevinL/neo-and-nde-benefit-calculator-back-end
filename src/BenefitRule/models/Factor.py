@@ -6,10 +6,10 @@ from math import isinf, inf
 class FactorPiece(models.Model):
 	inital_factor = models.IntegerField()
 	# https://stackoverflow.com/questions/10539026/how-to-create-a-django-floatfield-with-maximum-and-minimum-limits
-	min_year_of_coverage = models.FloatField(default=-inf)
-	max_year_of_coverage = models.FloatField(default=inf)
-	year_of_coverage_change = models.IntegerField(default=1)
-	factor_change = models.IntegerField(default=0)
+	min_year_of_coverage = models.PositiveIntegerField()
+	max_year_of_coverage = models.PositiveIntegerField()
+	year_of_coverage_change = models.IntegerField()
+	factor_change = models.IntegerField()
 	order = models.IntegerField()
 
 	def calculate(self, year_of_coverage):

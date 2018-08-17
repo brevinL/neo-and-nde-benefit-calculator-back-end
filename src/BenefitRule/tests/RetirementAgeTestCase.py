@@ -1,15 +1,14 @@
 from datetime import date
-from math import inf, floor
 from django.test import TestCase
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from BenefitRule.models import RetirementAge, Money, ordinal, currency
+from BenefitRule.models import RetirementAge, Money, ordinal, currency, MIN_INTEGER, MAX_INTEGER
 
 class RetirementAgeTestCase(TestCase):
 	def setUp(self):
 		nra = RetirementAge.objects.create(start_date=date.min, end_date=date.max,
 			retirement_type=RetirementAge.NORMAL)
-		nra.retirement_age_pieces.create(initial_retirement_age=65, start_year=-inf, end_year=1937, 
+		nra.retirement_age_pieces.create(initial_retirement_age=65, start_year=MIN_INTEGER, end_year=1937, 
 			normal_retirement_age_change=0, year_of_birth_change=1)
 		nra.retirement_age_pieces.create(initial_retirement_age=(65+2/12), start_year=1938, end_year=1942, 
 			normal_retirement_age_change=2/12, year_of_birth_change=1)
@@ -17,24 +16,24 @@ class RetirementAgeTestCase(TestCase):
 			normal_retirement_age_change=0, year_of_birth_change=1)
 		nra.retirement_age_pieces.create(initial_retirement_age=(66+2/12), start_year=1955, end_year=1959, 
 			normal_retirement_age_change=2/12, year_of_birth_change=1)
-		nra.retirement_age_pieces.create(initial_retirement_age=67, start_year=1960, end_year=inf, 
+		nra.retirement_age_pieces.create(initial_retirement_age=67, start_year=1960, end_year=MAX_INTEGER, 
 			normal_retirement_age_change=0, year_of_birth_change=1)
 
 		era = RetirementAge.objects.create(start_date=date.min, end_date=date.max, 
 			retirement_type=RetirementAge.EARLIEST)
-		era.retirement_age_pieces.create(initial_retirement_age=62, start_year=-inf, end_year=inf, 
+		era.retirement_age_pieces.create(initial_retirement_age=62, start_year=MIN_INTEGER, end_year=MAX_INTEGER, 
 			normal_retirement_age_change=0, year_of_birth_change=1)
 
 		dra = RetirementAge.objects.create(start_date=date.min, end_date=date.max, 
 			retirement_type=RetirementAge.LATEST)
-		dra.retirement_age_pieces.create(initial_retirement_age=70, start_year=-inf, end_year=inf, 
+		dra.retirement_age_pieces.create(initial_retirement_age=70, start_year=MIN_INTEGER, end_year=MAX_INTEGER, 
 			normal_retirement_age_change=0, year_of_birth_change=1)
 
 	def test_calculate_normal_retirement_age(self):
 		nra = RetirementAge.objects.get(
-			Q(retirement_type=RetirementAge.NORMAL) &
-			Q(start_date__lte=date(2016, 1, 1)) &
-			Q(end_date__gte=date(2016, 12, 31))
+			retirement_type=RetirementAge.NORMAL,
+			start_date__lte=date(2016, 1, 1), 
+			end_date__gte=date(2016, 12, 31)
 		)
 		self.assertAlmostEqual(65, nra.calculate(year_of_birth=1930))
 		self.assertAlmostEqual(65, nra.calculate(year_of_birth=1937))
@@ -56,9 +55,9 @@ class RetirementAgeTestCase(TestCase):
 
 	def test_calculate_early_retirement_age(self):
 		era = RetirementAge.objects.get(
-			Q(retirement_type=RetirementAge.EARLIEST) &
-			Q(start_date__lte=date(2016, 1, 1)) &
-			Q(end_date__gte=date(2016, 12, 31))
+			retirement_type=RetirementAge.EARLIEST,
+			start_date__lte=date(2016, 1, 1), 
+			end_date__gte=date(2016, 12, 31)
 		)
 		self.assertAlmostEqual(62, era.calculate(year_of_birth=1930))
 		self.assertAlmostEqual(62, era.calculate(year_of_birth=1960))
@@ -66,9 +65,9 @@ class RetirementAgeTestCase(TestCase):
 
 	def test_calculate_delayed_retirement_age(self):
 		dra = RetirementAge.objects.get(
-			Q(retirement_type=RetirementAge.LATEST) &
-			Q(start_date__lte=date(2016, 1, 1)) &
-			Q(end_date__gte=date(2016, 12, 31))
+			retirement_type=RetirementAge.LATEST,
+			start_date__lte=date(2016, 1, 1),
+			end_date__gte=date(2016, 12, 31)
 		)
 		self.assertAlmostEqual(70, dra.calculate(year_of_birth=1930))
 		self.assertAlmostEqual(70, dra.calculate(year_of_birth=1960))

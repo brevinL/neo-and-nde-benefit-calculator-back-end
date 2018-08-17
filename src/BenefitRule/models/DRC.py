@@ -5,7 +5,9 @@ from .Instruction import Task
 
 # https://www.ssa.gov/planners/retire/delayret.html
 class DelayRetirementCredit(models.Model):
-	age_limit = models.FloatField()
+	start_date = models.DateField()
+	end_date = models.DateField()
+	age_limit = models.FloatField() # year and month of an age (no infs)
 
 	def calculate(self, year_of_birth, normal_retirement_age, delayed_retirement_age):
 		normal_retirement_age = float(normal_retirement_age)
@@ -68,8 +70,8 @@ class DelayRetirementCredit(models.Model):
 
 class DelayRetirementCreditPiece(models.Model):
 	inital_percentage = models.FloatField()
-	min_year = models.FloatField()
-	max_year = models.FloatField()
+	min_year = models.PositiveIntegerField()
+	max_year = models.PositiveIntegerField()
 	percentage_rate = models.FloatField()
 	year_change = models.IntegerField()
 	delay_retirement_credit = models.ForeignKey(DelayRetirementCredit, 

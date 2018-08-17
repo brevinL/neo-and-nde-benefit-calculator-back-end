@@ -1,7 +1,13 @@
+# https://docs.djangoproject.com/en/2.1/ref/models/fields/#integerfield
+MIN_INTEGER = -2147483648 
+MAX_INTEGER = 2147483647 
+
+# https://docs.djangoproject.com/en/2.1/ref/models/fields/#positiveintegerfield
+MIN_POSITIVE_INTEGER = 0
+MAX_POSITIVE_INTEGER = 2147483647 
+
 SUFFIXES = {1: 'st', 2: 'nd', 3: 'rd'}
 def ordinal(num):
-	# I'm checking for 10-20 because those are the digits that
-	# don't follow the normal counting scheme. 
 	if 10 <= num % 100 <= 20:
 		suffix = 'th'
 	else:

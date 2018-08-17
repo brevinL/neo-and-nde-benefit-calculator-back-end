@@ -4,6 +4,9 @@ from .Money import Money
 
 # https://www.ssa.gov/planners/maxtax.html
 class MaximumTaxableEarning(models.Model): # should be foregin key to money to get the decimal amount
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	# amount = models.IntegerField()
 	max_money = models.ForeignKey(Money, on_delete=models.CASCADE)
 

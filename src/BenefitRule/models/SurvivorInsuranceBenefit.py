@@ -6,6 +6,9 @@ from .Money import Money
 # https://www.ssa.gov/oact/quickcalc/spouse.html
 # https://www.ssa.gov/OP_Home%2Fhandbook/handbook.03/handbook-0305.html
 class SurvivorInsuranceBenefit(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	max_benefit_entitlement_factor = models.FloatField()
 
 	def maxEntitlement(self, spousal_primary_insurance_amount):

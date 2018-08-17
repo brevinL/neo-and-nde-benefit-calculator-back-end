@@ -3,6 +3,9 @@ from django.db import models
 
 # https://www.ssa.gov/oact/progdata/nra.html
 class RetirementAge(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+
 	EARLIEST = 'E'
 	NORMAL = 'N'
 	LATEST = 'D'
@@ -22,11 +25,11 @@ class RetirementAge(models.Model):
 		return piece.calculate(year_of_birth)
 
 class RetirementAgePiece(models.Model):
-	initial_retirement_age = models.FloatField()
-	start_year = models.FloatField()
-	end_year = models.FloatField()
-	normal_retirement_age_change = models.FloatField()
-	year_of_birth_change = models.IntegerField()
+	initial_retirement_age = models.FloatField() # year, month
+	start_year = models.IntegerField()
+	end_year = models.IntegerField()
+	normal_retirement_age_change = models.FloatField() # year, month
+	year_of_birth_change = models.IntegerField() # should it be year and month??
 	retirement_age = models.ForeignKey(RetirementAge, on_delete=models.CASCADE, related_name="retirement_age_pieces")
 
 	def calculate(self, year_of_birth):

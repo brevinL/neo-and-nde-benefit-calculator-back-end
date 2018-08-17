@@ -7,3 +7,4 @@ from .PrimaryInsuranceAmountTestCase import *
 from .SpousalInsuranceBenefitTestCase import *
 from .SurvivorInsuranceBenefitTestCase import *
 from .WindfallEliminationProvisionTestCase import *
+from .RetirementAgeTestCase import *

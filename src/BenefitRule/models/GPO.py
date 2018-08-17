@@ -11,6 +11,9 @@ from .Instruction import Task
 # widow's, or widower's benefits. If you are eligible for a $500 spouse's benefit, 
 # you will receive $100 per month from Social Security ($500 - $400 = $100).
 class GovernmentPensionOffset(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	offset = models.FloatField()
 
 	def calculate(self, monthly_non_covered_pension):

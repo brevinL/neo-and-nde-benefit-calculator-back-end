@@ -1,10 +1,7 @@
-from math import isinf, inf
 from fractions import Fraction
-from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Q
 from .RA import RetirementAge
-from .Utilities import percentage
+from .Utilities import percentage, MAX_POSITIVE_INTEGER
 from .Instruction import Task
 
 # https://www.ssa.gov/oact/quickcalc/early_late.html
@@ -16,6 +13,9 @@ A spousal benefit is reduced 25/36 of 1% for each month before normal retirement
 If the number of months exceeds 36, then the benefit is further reduced 5/12 of 1% per month.
 '''
 class EarlyRetirementBenefitReduction(models.Model):
+	start_date = models.DateField()
+	end_date = models.DateField()
+	
 	SPOUSAL = 'SP'
 	PRIMARY = 'PR'
 	SURVIVOR = 'SU'
@@ -92,10 +92,10 @@ class EarlyRetirementBenefitReduction(models.Model):
 					'before normal retirement age, ' \
 					f'add {Fraction(piece.factor).limit_denominator()} of {percentage(piece.percentage)} to early retirement benefit percentage reduction', order=order) 
 				instruction.expression_set.create(description='early retirement benefit percentage reduction = early retirement benefit percentage reduction + ' \
-					f'min(number of months before normal retirement age, ' + ('infinity' if isinf(piece.theshold_in_months) else str(piece.theshold_in_months)) + ') x ' \
+					f'min(number of months before normal retirement age, ' + ('infinity' if piece.theshold_in_months >= MAX_POSITIVE_INTEGER else str(piece.theshold_in_months)) + ') x ' \
 					f'{Fraction(piece.factor).limit_denominator()} of {percentage(piece.percentage)}', order=1)
 				instruction.expression_set.create(description=f'early retirement benefit percentage reduction = {percentage(benefit_reduction_factor)} + ' \
-					f'min({difference_in_months}, ' + ('infinity' if isinf(piece.theshold_in_months) else str(piece.theshold_in_months)) + ') x ' \
+					f'min({difference_in_months}, ' + ('infinity' if piece.theshold_in_months >= MAX_POSITIVE_INTEGER else str(piece.theshold_in_months)) + ') x ' \
 					f'{Fraction(piece.factor).limit_denominator()} x {percentage(piece.percentage)}', order=2)
 				instruction.expression_set.create(description=f'early retirement benefit percentage reduction = {percentage(benefit_reduction_factor)} + ' \
 					f'{min(difference_in_months, piece.theshold_in_months)} x ' \
@@ -106,7 +106,7 @@ class EarlyRetirementBenefitReduction(models.Model):
 
 				if difference_in_months - piece.theshold_in_months > 0:
 					instruction = task.instruction_set.create(description='Update number of months before normal retirement age', order=order + 1)
-					instruction.expression_set.create(description=f'number of months before normal retirement age = {difference_in_months} - ' + ('infinity' if isinf(piece.theshold_in_months) else str(piece.theshold_in_months)), order=1)
+					instruction.expression_set.create(description=f'number of months before normal retirement age = {difference_in_months} - ' + ('infinity' if piece.theshold_in_months >= MAX_POSITIVE_INTEGER else str(piece.theshold_in_months)), order=1)
 					instruction.expression_set.create(description=f'number of months before normal retirement age = {difference_in_months - piece.theshold_in_months}', order=2)
 				difference_in_months -= piece.theshold_in_months
 
@@ -125,7 +125,7 @@ class EarlyRetirementBenefitReduction(models.Model):
 class EarlyRetirementBenefitReductionPiece(models.Model):
 	factor = models.FloatField()
 	percentage = models.FloatField()
-	theshold_in_months = models.FloatField(validators=[MinValueValidator(0)], default=inf)
+	theshold_in_months = models.PositiveIntegerField()
 	early_retirement_benefit_reduction = models.ForeignKey(EarlyRetirementBenefitReduction, 
 		on_delete=models.CASCADE, related_name="early_retirement_benefit_reduction_piece_set")
 
@@ -134,21 +134,20 @@ class EarlyRetirementBenefitReductionPiece(models.Model):
 
 class SurvivorEarlyRetirementBenefitReductionPiece(models.Model):
 	max_percentage_reduction = models.FloatField()
-	# while time is infinite, retirement age (theshold_in_months) is bound to the finite life span of a human
 	early_retirement_benefit_reduction = models.ForeignKey(EarlyRetirementBenefitReduction, 
 		on_delete=models.CASCADE, related_name="survivor_early_retirement_benefit_reduction_piece_set")
 	
 	@property
 	def factor(self):
 		normal_retirement_age = RetirementAge.objects.get(
-			Q(retirement_type=RetirementAge.NORMAL) &
-			Q(start_date__lte=self.early_retirement_benefit_reduction.start_date) & 
-			Q(end_date__gte=self.early_retirement_benefit_reduction.end_date)
+			retirement_type=RetirementAge.NORMAL,
+			start_date__lte=self.early_retirement_benefit_reduction.start_date,
+			end_date__gte=self.early_retirement_benefit_reduction.end_date
 		).calculate(self.early_retirement_benefit_reduction.start_date.year)
 		earliest_retirement_age = RetirementAge.objects.get(
-			Q(retirement_type=RetirementAge.EARLIEST) &
-			Q(start_date__lte=self.early_retirement_benefit_reduction.start_date) & 
-			Q(end_date__gte=self.early_retirement_benefit_reduction.end_date)
+			retirement_type=RetirementAge.EARLIEST,
+			start_date__lte=self.early_retirement_benefit_reduction.start_date,
+			end_date__gte=self.early_retirement_benefit_reduction.end_date
 		).calculate(self.early_retirement_benefit_reduction.start_date.year)
 		return self.max_percentage_reduction / (abs(normal_retirement_age - earliest_retirement_age + 1) * 12)
 
