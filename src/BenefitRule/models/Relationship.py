@@ -51,8 +51,8 @@ class Relationship(models.Model):
 	start_date = models.DateField(null=True, blank=True)
 	end_date = models.DateField(null=True, blank=True)
 
-	# class Meta:
-	# 	unique_together = ('content_type1', 'content_type2',)
+	class Meta:
+		unique_together = ('content_type1', 'content_type2',)
 
 	def get_other(self, content_object):
 		if content_object == self.content_object1:

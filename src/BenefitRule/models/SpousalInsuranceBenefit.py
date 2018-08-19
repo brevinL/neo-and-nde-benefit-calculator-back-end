@@ -68,18 +68,18 @@ class SpousalInsuranceBenefit(models.Model):
 		spousal_insurance_benefit -= primary_insurance_amount
 
 		instruction = task.instruction_set.create(description='Get government pension offset', order=7)
-		instruction = task.instruction_set.create(description=f'government pension offset = {government_pension_offset}', order=1)
+		instruction.expression_set.create(description=f'government pension offset = {government_pension_offset}', order=1)
 
 		instruction = task.instruction_set.create(description='Subtract the government pension offset from spousal insurance benefit', order=8)
-		instruction = task.instruction_set.create(description='spousal insurance benefit = spousal insurance benefit - government pension offset', order=1)
-		instruction = task.instruction_set.create(description=f'spousal insurance benefit = {spousal_insurance_benefit} - {government_pension_offset}', order=2)
-		instruction = task.instruction_set.create(description=f'spousal insurance benefit = {spousal_insurance_benefit - government_pension_offset}', order=3)
+		instruction.expression_set.create(description='spousal insurance benefit = spousal insurance benefit - government pension offset', order=1)
+		instruction.expression_set.create(description=f'spousal insurance benefit = {spousal_insurance_benefit} - {government_pension_offset}', order=2)
+		instruction.expression_set.create(description=f'spousal insurance benefit = {spousal_insurance_benefit - government_pension_offset}', order=3)
 
 		spousal_insurance_benefit -= government_pension_offset
 
 		instruction = task.instruction_set.create(description='Cap spousal insurance benefit', order=9)
-		instruction = task.instruction_set.create(description='spousal insurance benefit = max($0.00, spousal insurance benefit)', order=1)
-		instruction = task.instruction_set.create(description=f'spousal insurance benefit = max($0.00, {spousal_insurance_benefit})', order=2)
-		instruction = task.instruction_set.create(description=f'spousal insurance benefit = {max(Money(amount=0), spousal_insurance_benefit)}', order=3)
+		instruction.expression_set.create(description='spousal insurance benefit = max($0.00, spousal insurance benefit)', order=1)
+		instruction.expression_set.create(description=f'spousal insurance benefit = max($0.00, {spousal_insurance_benefit})', order=2)
+		instruction.expression_set.create(description=f'spousal insurance benefit = {max(Money(amount=0), spousal_insurance_benefit)}', order=3)
 
 		return task

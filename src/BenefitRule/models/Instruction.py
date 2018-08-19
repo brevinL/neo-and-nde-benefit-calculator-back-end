@@ -1,7 +1,11 @@
 from django.db import models
 
 class Task(models.Model):
-	pass
+	def __eq__(self, other):
+		for instruction in self.instruction_set.all():
+			if instruction != other.instruction_set.get(order=instruction.order):
+				return False
+		return True
 
 class Instruction(models.Model):
 	task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="instruction_set")
@@ -13,6 +17,9 @@ class Instruction(models.Model):
 
 	def __eq__(self, other):
 		if(self.order == other.order and self.description == other.description):
+			for expression in self.expression_set.all():
+				if expression != other.expression_set.get(order=expression.order):
+					return False
 			return True
 		return False
 

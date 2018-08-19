@@ -3,4 +3,3 @@ from BenefitRule.views import *
 
 BenefitRuleRouter = SimpleRouter()
 BenefitRuleRouter.register(r'relationship', RelationshipViewSet, 'relationship')
-BenefitRuleRouter.register(r'record', RecordViewSet, 'record')

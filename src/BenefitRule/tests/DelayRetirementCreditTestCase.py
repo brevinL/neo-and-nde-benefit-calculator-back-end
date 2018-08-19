@@ -68,14 +68,7 @@ class DelayRetirementCreditTestCase(TestCase):
 		instruction = expected_task.instruction_set.create(description='Set delay retirement benefit percentage increase to zero', order=4)
 		instruction.expression_set.create(description='delay retirement benefit percentage increase = 0.00%', order=1)
 
-		delayed_retirement_credit_task = drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=67.0)
-		for expected_instruction in expected_task.instruction_set.all():
-			drc_instruction = delayed_retirement_credit_task.instruction_set.get(order=expected_instruction.order)
-			self.assertEqual(drc_instruction, expected_instruction)
-
-			for expected_expression in expected_instruction.expression_set.all():
-				drc_expression = drc_instruction.expression_set.get(order=expected_expression.order)
-				self.assertEqual(drc_expression, expected_expression)
+		self.assertEqual(expected_task, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67.0, delayed_retirement_age=67.0))
 
 	def test_stepByStep_with_delay_retirement(self):
 		drc = DelayRetirementCredit.objects.get(
@@ -106,14 +99,7 @@ class DelayRetirementCreditTestCase(TestCase):
 		instruction.expression_set.create(description='delay retirement benefit percentage increase = 4.0 * 8.00%', order=2)
 		instruction.expression_set.create(description='delay retirement benefit percentage increase = 32.00%', order=3)
 
-		delayed_retirement_credit_task = drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80)
-		for expected_instruction in expected_task.instruction_set.all():
-			drc_instruction = delayed_retirement_credit_task.instruction_set.get(order=expected_instruction.order)
-			self.assertEqual(drc_instruction, expected_instruction)
-
-			for expected_expression in expected_instruction.expression_set.all():
-				drc_expression = drc_instruction.expression_set.get(order=expected_expression.order)
-				self.assertEqual(drc_expression, expected_expression)
+		self.assertEqual(expected_task, drc.stepByStep(year_of_birth=1954, normal_retirement_age=67, delayed_retirement_age=80))
 		
 class DelayRetirementCreditPieceTestCase(TestCase):
 	def setUp(self):

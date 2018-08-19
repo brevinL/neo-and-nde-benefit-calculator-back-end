@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from BenefitRule.models import Relationship
-from NEOandNDEBenefitCalculator.models import DetailRecord
+from BenefitRule.models import Relationship, BenefitRule, Record
+from NEOandNDEBenefitCalculator.models import Respondent, DetailRecord
 from NEOandNDEBenefitCalculator.serializers import DetailRecordSerializer
 
 class DetailRecordViewSet(viewsets.ModelViewSet):
@@ -22,7 +22,7 @@ class DetailRecordViewSet(viewsets.ModelViewSet):
 		# have to change manually each year because you got to 
 		# add in the numbers for the other laws to db anyways
 		year = 2016
-		benefit_rules = get_object_or_404(BenefitRule, Q(start_date__lte=date(year, 1, 1)) & Q(end_date__gte=date(year, 12, 31)))
+		benefit_rules = get_object_or_404(BenefitRule, start_date__lte=date(year, 1, 1),end_date__gte=date(year, 12, 31))
 		record = get_object_or_404(Record, person=respondent)
 		detail_record = DetailRecord.objects.calculate_retirement_record(benefit_rules=benefit_rules, respondent=respondent, beneficiary_record=record)
 

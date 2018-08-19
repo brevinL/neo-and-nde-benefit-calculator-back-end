@@ -90,22 +90,22 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		expected_task = Task.objects.create()
 		instruction = expected_task.instruction_set.create(description='Get indexed yearly earnings', order=1)
 		instruction.expression_set.create(description='indexed yearly earnings = ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
 		instruction = expected_task.instruction_set.create(description='Sort indexed yearly earnings in descending order', order=2)
 		instruction.expression_set.create(description='indexed yearly earnings = ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
 		instruction = expected_task.instruction_set.create(description='Get highest 35 indexed yearly earnings', order=3)
 		instruction.expression_set.create(description='highest 35 indexed yearly earnings = ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
-				'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00, ' \
+			'$30,000.00, $30,000.00, $30,000.00, $30,000.00, $30,000.00', order=1)
 		instruction = expected_task.instruction_set.create(description='Get average indexed yearly earning', order=4)
 		instruction.expression_set.create(description=f'average indexed yearly earning = sum of highest 35 indexed yearly earnings ' \
-				'/ number of highest indexed yearly earnings', order=1)
+			'/ number of highest indexed yearly earnings', order=1)
 		instruction.expression_set.create(description='average indexed yearly earning = $450,000.00 / 35', order=2)
 		instruction.expression_set.create(description='average indexed yearly earning = $12,857.14', order=3)
 		instruction = expected_task.instruction_set.create(description='Divide average indexed yearly earning by 12', order=5)
@@ -113,11 +113,4 @@ class AverageIndexedMonthlyEarningTestCase(TestCase):
 		instruction.expression_set.create(description='average indexed monthly earning = $12,857.14 / 12', order=2)
 		instruction.expression_set.create(description='average indexed monthly earning = $1,071.43', order=3)
 
-		average_indexed_monthly_earning_task = aime.stepByStep(taxable_earnings=taxable_earnings)
-		for expected_instruction in expected_task.instruction_set.all():
-			aime_instruction = average_indexed_monthly_earning_task.instruction_set.get(order=expected_instruction.order)
-			self.assertEqual(aime_instruction, expected_instruction)
-
-			for expected_expression in expected_instruction.expression_set.all():
-				aime_expression = aime_instruction.expression_set.get(order=expected_expression.order)
-				self.assertEqual(aime_expression, expected_expression)
+		self.assertEqual(expected_task, aime.stepByStep(taxable_earnings=taxable_earnings))

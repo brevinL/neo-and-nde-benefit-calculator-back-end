@@ -1,7 +1,7 @@
 from fractions import Fraction
 from django.db import models
 from .RA import RetirementAge
-from .Utilities import percentage, MAX_POSITIVE_INTEGER
+from .Utilities import percentage, MIN_POSITIVE_INTEGER, MAX_POSITIVE_INTEGER
 from .Instruction import Task
 
 # https://www.ssa.gov/oact/quickcalc/early_late.html
@@ -85,10 +85,11 @@ class EarlyRetirementBenefitReduction(models.Model):
 		elif self.benefit_type == self.SURVIVOR:
 			pieces = self.survivor_early_retirement_benefit_reduction_piece_set.all()
 
-		for (order, piece) in enumerate(pieces, 6):
+		for piece in pieces:
+			order = task.instruction_set.count() + 1
 			if self.benefit_type == self.SPOUSAL or self.benefit_type == self.PRIMARY:
 				instruction = task.instruction_set.create(description='For each month ' + \
-					(f'(up to {piece.theshold_in_months} months) ' if not isinf(piece.theshold_in_months) else '') + \
+					(f'(up to {piece.theshold_in_months} months) ' if not(piece.theshold_in_months <= MIN_POSITIVE_INTEGER or piece.theshold_in_months >= MAX_POSITIVE_INTEGER) else '') + \
 					'before normal retirement age, ' \
 					f'add {Fraction(piece.factor).limit_denominator()} of {percentage(piece.percentage)} to early retirement benefit percentage reduction', order=order) 
 				instruction.expression_set.create(description='early retirement benefit percentage reduction = early retirement benefit percentage reduction + ' \
@@ -115,7 +116,7 @@ class EarlyRetirementBenefitReduction(models.Model):
 					f'add {percentage(piece.factor)} to early retirement benefit percentage reduction', order=order)
 				instruction.expression_set.create(description='early retirement benefit percentage reduction = early retirement benefit percentage reduction + ' \
 					f'number of months before normal retirement age x {percentage(piece.factor)}', order=1)
-				instruction.expression_set.create(f'early retirement benefit percentage reduction = {percentage(benefit_reduction_factor)} + ' \
+				instruction.expression_set.create(description=f'early retirement benefit percentage reduction = {percentage(benefit_reduction_factor)} + ' \
 					f'{difference_in_months} x {percentage(piece.factor)}', order=2)
 				instruction.expression_set.create(description=f'early retirement benefit percentage reduction = {percentage(benefit_reduction_factor + difference_in_months * piece.factor)}', order=3)
 				benefit_reduction_factor += piece.factor
