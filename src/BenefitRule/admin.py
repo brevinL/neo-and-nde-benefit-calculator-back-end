@@ -21,3 +21,13 @@ admin.site.register(BenefitRule)
 admin.site.register(Task)
 admin.site.register(Instruction)
 admin.site.register(Expression)
+
+admin.site.register(BendPoint)
+admin.site.register(Factor)
+admin.site.register(FactorPiece)
+admin.site.register(EarlyRetirementBenefitReductionPiece)
+admin.site.register(SurvivorEarlyRetirementBenefitReductionPiece)
+admin.site.register(DelayRetirementCreditPiece)
+admin.site.register(RetirementAgePiece)
+
+admin.site.register(QuarterOfCoverage)
