@@ -2,7 +2,6 @@
 # Created by https://www.gitignore.io/api/venv,django,python,windows
 
 mysql/
-nginx/
 
 ### Django ###
 *.log
