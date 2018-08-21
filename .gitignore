@@ -1,7 +1,8 @@
 
 # Created by https://www.gitignore.io/api/venv,django,python,windows
-
-mysql/
+mysql/config
+mysql/db-data
+mysql/config/.ash_history
 
 ### Django ###
 *.log
