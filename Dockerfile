@@ -5,7 +5,7 @@ RUN mkdir /neo-and-nde-benefit-calculator-back-end/
 WORKDIR /neo-and-nde-benefit-calculator-back-end/
 ADD . /neo-and-nde-benefit-calculator-back-end/
 
-RUN cp /neo-and-nde-benefit-calculator-back-end/mysql/config /root
+RUN mv /neo-and-nde-benefit-calculator-back-end/mysql/config/.mylogin.cnf /root
 RUN chmod 740 /root/.mylogin.cnf
 
 # https://github.com/gliderlabs/docker-alpine/issues/181#issuecomment-348608168
