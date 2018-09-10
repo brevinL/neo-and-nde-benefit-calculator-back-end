@@ -17,3 +17,4 @@ from .RA import *
 from .Utilities import *
 from .Record import *
 from .Relationship import *
+from .DetailRecord import *

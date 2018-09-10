@@ -12,7 +12,7 @@ class SurvivorInsuranceBenefit(models.Model):
 	def calculateSurvivorEarlyRetirementReductionFactor(self, normal_retirement_age, retirement_age):
 		year_of_early_retirement = min(0, normal_retirement_age - retirement_age)
 		if year_of_early_retirement > 0:
-			return max_benefit_entitlement_factor /  * 12
+			return max_benefit_entitlement_factor /  year_of_early_retirement * 12
 		return 0
 
 	def maxEntitlement(self, spousal_primary_insurance_amount):

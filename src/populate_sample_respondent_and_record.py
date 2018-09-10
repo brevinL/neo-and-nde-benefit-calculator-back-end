@@ -5,7 +5,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BenefitCalculator.settings')
 django.setup()
 from BenefitRule.models import Relationship
 from NEOandNDEBenefitCalculator.models import Money, Respondent
-from django.contrib.sites.models import Site
+from rest_framework.reverse import reverse
 
 # Start execution here!
 if __name__ == '__main__':
@@ -43,8 +43,12 @@ if __name__ == '__main__':
 		relationship_type=Relationship.MARRIED)
 
 	import urllib.request
-	url = f"http://localhost:8000/api/neo-and-nde-benefit-calculator/record/summary/?respondent={beneficary.id}"
-	'https://%s%s' % (Site.objects.get_current().domain, reverse('neo-and-nde-benefit-calculator:respondent-list'))
+	# url = f"http://localhost:8000/api/neo-and-nde-benefit-calculator/record/summary/?respondent={beneficary.id}"
+	domain = 'localhost:8000' # Site.objects.get_current().domain
+	path = reverse('neo-and-nde-benefit-calculator:respondent-detail', args=[beneficary.id])
+	action = 'get_record/'
+	url = f"http://{domain}{path}{action}"
+	print(url)
 	contents = urllib.request.urlopen(url).read()
 
 	print("Finish Respondent & Record population script.")
