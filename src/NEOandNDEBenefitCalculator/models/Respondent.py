@@ -2,7 +2,6 @@ from django.db import models
 from BenefitRule.models import Money, Person
 
 class Respondent(Person):
-	alias = models.TextField(null=False, blank=True)
 	years_of_covered_earnings = models.IntegerField()
 	annual_covered_earning = models.ForeignKey(Money, on_delete=models.CASCADE, null=True, blank=True, related_name="annual_covered_earning") 
 	years_of_non_covered_earnings = models.IntegerField()

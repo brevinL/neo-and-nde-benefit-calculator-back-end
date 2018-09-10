@@ -9,8 +9,8 @@ done
 
 >&2 echo "Database is up - continuing"
 
-python manage.py makemigrations --settings=BenefitCalculator.production-settings
-python manage.py migrate --settings=BenefitCalculator.production-settings
+python manage.py makemigrations
+python manage.py migrate
 python populate_benefit_rules.py
 
 exec "$@"

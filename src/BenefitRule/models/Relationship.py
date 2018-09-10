@@ -52,7 +52,7 @@ class Relationship(models.Model):
 	end_date = models.DateField(null=True, blank=True)
 
 	class Meta:
-		unique_together = ('content_type1', 'content_type2',)
+		unique_together = ('content_type1', 'content_type2', 'object_id1', 'object_id2')
 
 	def get_other(self, content_object):
 		if content_object == self.content_object1:

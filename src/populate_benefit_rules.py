@@ -1,5 +1,4 @@
 from datetime import date
-from math import inf
 import os
 import django
 

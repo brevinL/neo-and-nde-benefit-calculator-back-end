@@ -23,8 +23,8 @@ from NEOandNDEBenefitCalculator.routers import NEONDERouter
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/benefit-rule/', include(BenefitRuleRouter.urls)), 
-    url(r'^api/neo-and-nde-benefit-calculator/', include(NEONDERouter.urls)), 
+    url(r'^api/benefit-rule/', include((BenefitRuleRouter.urls, 'BenefitRule'), namespace='benefit-rule')), 
+    url(r'^api/neo-and-nde-benefit-calculator/', include((NEONDERouter.urls, 'NEOandNDEBenefitCalculator'), namespace='neo-and-nde-benefit-calculator')), 
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns) 
