@@ -12,8 +12,8 @@ class Instruction(models.Model):
 	order = models.IntegerField()
 	description = models.TextField()
 
-	class Meta:
-		unique_together = (("task", "order"),) 
+	# class Meta:
+	# 	unique_together = (("task", "order"),) 
 
 	def __eq__(self, other):
 		if(self.order == other.order and self.description == other.description):
@@ -31,8 +31,8 @@ class Expression(models.Model):
 	description = models.TextField()
 	order = models.IntegerField()
 
-	class Meta:
-		unique_together = (("instruction", "order"),) 
+	# class Meta:
+	# 	unique_together = (("instruction", "order"),) 
 
 	def __eq__(self, other):
 		if(self.order == other.order and self.description == other.description):

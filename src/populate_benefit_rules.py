@@ -104,17 +104,17 @@ def populate_wep_primary_insurance_amount_law():
 	BendPoint.objects.get_or_create(min_dollar_amount=856, max_dollar_amount=5157, order=2, primary_insurance_amount=wep_pia)
 	BendPoint.objects.get_or_create(min_dollar_amount=5157, max_dollar_amount=MAX_POSITIVE_INTEGER, order=3, primary_insurance_amount=wep_pia)
 
-	f1 = Factor.objects.create(order=1, primary_insurance_amount=wep_pia)
-	FactorPiece.objects.create(inital_factor=0.40, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=20, year_of_coverage_change=1, factor_change=0, order=1, factor=f1)
-	FactorPiece.objects.create(inital_factor=0.45, min_year_of_coverage=21, max_year_of_coverage=29, year_of_coverage_change=1, factor_change=0.05, order=2, factor=f1)
-	FactorPiece.objects.create(inital_factor=0.90, min_year_of_coverage=30, max_year_of_coverage=MAX_POSITIVE_INTEGER, year_of_coverage_change=1, factor_change=0, order=3, factor=f1)
+	f1, created = Factor.objects.get_or_create(order=1, primary_insurance_amount=wep_pia)
+	FactorPiece.objects.get_or_create(inital_factor=0.40, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=20, year_of_coverage_change=1, factor_change=0, order=1, factor=f1)
+	FactorPiece.objects.get_or_create(inital_factor=0.45, min_year_of_coverage=21, max_year_of_coverage=29, year_of_coverage_change=1, factor_change=0.05, order=2, factor=f1)
+	FactorPiece.objects.get_or_create(inital_factor=0.90, min_year_of_coverage=30, max_year_of_coverage=MAX_POSITIVE_INTEGER, year_of_coverage_change=1, factor_change=0, order=3, factor=f1)
 
-	f2 = Factor.objects.create(order=2, primary_insurance_amount=wep_pia)
-	FactorPiece.objects.create(inital_factor=0.32, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=MAX_POSITIVE_INTEGER, 
+	f2, created = Factor.objects.get_or_create(order=2, primary_insurance_amount=wep_pia)
+	FactorPiece.objects.get_or_create(inital_factor=0.32, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=MAX_POSITIVE_INTEGER, 
 		year_of_coverage_change=1, factor_change=0, order=1, factor=f2)
 
-	f3 = Factor.objects.create(order=3, primary_insurance_amount=wep_pia)
-	FactorPiece.objects.create(inital_factor=0.15, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=MAX_POSITIVE_INTEGER, 
+	f3, created = Factor.objects.get_or_create(order=3, primary_insurance_amount=wep_pia)
+	FactorPiece.objects.get_or_create(inital_factor=0.15, min_year_of_coverage=MIN_POSITIVE_INTEGER, max_year_of_coverage=MAX_POSITIVE_INTEGER, 
 		year_of_coverage_change=1, factor_change=0, order=1, factor=f3)
 	return wep_pia
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 	basic_primary_insurance_amount_law = populate_basic_primary_insurance_amount_law()
 	wep_primary_insurance_amount_law = populate_wep_primary_insurance_amount_law()
 
-	BenefitRule.objects.create(
+	benefit_rule, create = BenefitRule.objects.get_or_create(
 		start_date=date(2016, 1, 1),
 		end_date=date(2016, 12, 31),
 		earliest_retirement_age_law=early_retirement_age_law,

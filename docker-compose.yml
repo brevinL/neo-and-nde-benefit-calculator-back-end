@@ -5,8 +5,6 @@ services:
     image: neo-and-nde-benefit-calculator-back-end
     depends_on:
       - mysql
-    volumes:
-      - ./mysql/config:/root
     deploy:
       replicas: 2
       restart_policy:
