@@ -31,7 +31,8 @@ class PersonViewSet(viewsets.ModelViewSet):
 		try:
 			record = Record.objects.get(person=person)
 		except Record.DoesNotExist:
-			record = Record.objects.create(person=person)
+			record = Record(content_object=person)
+			record.save()
 		record = record.calculate_retirement_record(benefit_rules=benefit_rules)
 
 		respondent_married_relationships = Relationship.objects.filter(Q(person1=person) | Q(person2=person), relationship_type=Relationship.MARRIED)
