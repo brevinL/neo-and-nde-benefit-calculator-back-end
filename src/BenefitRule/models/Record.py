@@ -1,4 +1,5 @@
 from django.db import models
+from .Earning import Earning
 from .Money import Money
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -6,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 class Record(models.Model):
 	limit = {'model__in': ['person', 'respondent']}
 	
-	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to=limit, related_name="content_type")
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to=limit)
 	object_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -129,7 +130,7 @@ class Record(models.Model):
 		normal_retirement_age = self.calculate_normal_retirement_age(
 			normal_retirement_age_law=benefit_rules.normal_retirement_age_law,
 			year_of_birth=self.content_object.year_of_birth)
-		annual_covered_earnings = self.calculate_annual_covered_earnings(earnings=self.content_object.earning_set)
+		annual_covered_earnings = self.calculate_annual_covered_earnings(earnings=self.content_object.earnings)
 		average_indexed_monthly_covered_earning = self.calculate_average_indexed_monthly_covered_earning(
 			aime_law=benefit_rules.aime_law,
 			taxable_earnings=annual_covered_earnings) 
@@ -140,7 +141,7 @@ class Record(models.Model):
 			wep_pia_law=benefit_rules.wep_pia_law, 
 			average_indexed_monthly_earning=average_indexed_monthly_covered_earning,
 			year_of_coverage=annual_covered_earnings.count())
-		annual_non_covered_earnings = self.calculate_annual_non_covered_earnings(earnings=self.content_object.earning_set)
+		annual_non_covered_earnings = self.calculate_annual_non_covered_earnings(earnings=self.content_object.earnings)
 		average_indexed_monthly_non_covered_earning = self.calculate_average_indexed_monthly_non_covered_earning(
 			aime_law=benefit_rules.aime_law, 
 			taxable_earnings=annual_non_covered_earnings)
@@ -214,37 +215,37 @@ class Record(models.Model):
 		early_retirement_reduction=None,
 		benefit=None):
 		if not earliest_retirement_age is None:
-			record.earliest_retirement_age = earliest_retirement_age
+			self.earliest_retirement_age = earliest_retirement_age
 		if not normal_retirement_age is None:
-			record.normal_retirement_age = normal_retirement_age
+			self.normal_retirement_age = normal_retirement_age
 		if not average_indexed_monthly_covered_earning is None:
-			record.average_indexed_monthly_covered_earning = average_indexed_monthly_covered_earning
+			self.average_indexed_monthly_covered_earning = average_indexed_monthly_covered_earning
 		if not basic_primary_insurance_amount is None:
-			record.basic_primary_insurance_amount = basic_primary_insurance_amount
+			self.basic_primary_insurance_amount = basic_primary_insurance_amount
 		if not wep_primary_insurance_amount is None:
-			record.wep_primary_insurance_amount = wep_primary_insurance_amount
+			self.wep_primary_insurance_amount = wep_primary_insurance_amount
 		if not average_indexed_monthly_non_covered_earning is None:
-			record.average_indexed_monthly_non_covered_earning = average_indexed_monthly_non_covered_earning
+			self.average_indexed_monthly_non_covered_earning = average_indexed_monthly_non_covered_earning
 		if not monthly_non_covered_pension is None:
-			record.monthly_non_covered_pension = monthly_non_covered_pension
+			self.monthly_non_covered_pension = monthly_non_covered_pension
 		if not government_pension_offset is None:
-			record.government_pension_offset = government_pension_offset
+			self.government_pension_offset = government_pension_offset
 		if not wep_reduction is None:
-			record.wep_reduction = wep_reduction
+			self.wep_reduction = wep_reduction
 		if not final_primary_insurance_amount is None:
-			record.final_primary_insurance_amount = final_primary_insurance_amount
+			self.final_primary_insurance_amount = final_primary_insurance_amount
 		if not max_delay_retirement_credit is None:
-			record.max_delay_retirement_credit = max_delay_retirement_credit
+			self.max_delay_retirement_credit = max_delay_retirement_credit
 		if not delay_retirement_credit is None:
-			record.delay_retirement_credit = delay_retirement_credit
+			self.delay_retirement_credit = delay_retirement_credit
 		if not max_early_retirement_reduction is None:
-			record.max_early_retirement_reduction = max_early_retirement_reduction
+			self.max_early_retirement_reduction = max_early_retirement_reduction
 		if not early_retirement_reduction is None:
-			record.early_retirement_reduction = early_retirement_reduction
+			self.early_retirement_reduction = early_retirement_reduction
 		if not benefit is None:
-			record.benefit = benefit
-		record.save()
-		return record
+			self.benefit = benefit
+		self.save()
+		return self
 
 	def calculate_dependent_benefits(self, benefit_rules, beneficiary_record, spousal_beneficiary_record):
 		beneficiary_record.spousal_insurance_benefit = benefit_rules.spousal_insurance_benefit_law.calculate(

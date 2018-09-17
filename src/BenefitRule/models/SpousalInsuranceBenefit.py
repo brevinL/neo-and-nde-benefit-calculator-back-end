@@ -1,7 +1,7 @@
 from fractions import Fraction
 from django.db import models
 from .ERR import EarlyRetirementBenefitReduction
-from .Earning import Earning, Money
+from .Money import Money
 from .Instruction import Task
 
 # https://www.ssa.gov/planners/retire/applying6.html

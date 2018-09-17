@@ -4,3 +4,4 @@ from .MoneySerializer import *
 from .PersonSerializer import *
 from .RecordSerializer import *
 from .RelationshipSerializer import *
+from .DetailRecordSerializer import *

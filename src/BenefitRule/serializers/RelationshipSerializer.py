@@ -2,7 +2,8 @@ from rest_framework import serializers
 from BenefitRule.models import Relationship, Person
 from NEOandNDEBenefitCalculator.models import Respondent
 from generic_relations.relations import GenericRelatedField
-
+from BenefitRule.serializers import PersonSerializer
+from NEOandNDEBenefitCalculator.serializers import RespondentSerializer
 # class RelationshipListSerializer(serializers.ListSerializer):
 # 	def create(self, validated_data):
 # 		relationships = [Relationship(**item) for item in validated_data]
@@ -13,25 +14,13 @@ class RelationshipSerializer(serializers.ModelSerializer):
 	# person2_id = serializers.IntegerField()
 
 	content_object1 = GenericRelatedField({
-		Person: serializers.HyperlinkedRelatedField(
-			queryset = Person.objects.all(),
-			view_name='person-detail',
-		),
-		Respondent: serializers.HyperlinkedRelatedField(
-			queryset = Respondent.objects.all(),
-			view_name='respondent-detail',
-		),
+		Person: PersonSerializer(),
+		Respondent: RespondentSerializer()
 	})
 
 	content_object2 = GenericRelatedField({
-		Person: serializers.HyperlinkedRelatedField(
-			queryset = Person.objects.all(),
-			view_name='person-detail',
-		),
-		Respondent: serializers.HyperlinkedRelatedField(
-			queryset = Respondent.objects.all(),
-			view_name='respondent-detail',
-		),
+		Person: PersonSerializer(),
+		Respondent: RespondentSerializer()
 	})
 
 	class Meta:

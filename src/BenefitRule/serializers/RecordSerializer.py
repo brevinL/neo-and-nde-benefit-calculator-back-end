@@ -1,9 +1,17 @@
 from rest_framework import serializers
-from BenefitRule.models import Record
+from BenefitRule.models import Record, Person
+from NEOandNDEBenefitCalculator.models import Respondent
+from NEOandNDEBenefitCalculator.serializers import RespondentSerializer
 from .MoneySerializer import MoneySerializer
+from .PersonSerializer import PersonSerializer
+from generic_relations.relations import GenericRelatedField
 
 class RecordSerializer(serializers.ModelSerializer):
-	person_id = serializers.IntegerField()
+	content_object = GenericRelatedField({
+		Person: PersonSerializer(),
+		Respondent: RespondentSerializer()
+	})
+
 	average_indexed_monthly_covered_earning = MoneySerializer()
 	basic_primary_insurance_amount = MoneySerializer()
 	wep_primary_insurance_amount = MoneySerializer()
@@ -18,4 +26,12 @@ class RecordSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Record
-		fields = '__all__'
+		fields = ('id', 'object_id', 'content_object',
+			'earliest_retirement_age', 'normal_retirement_age', 
+			'average_indexed_monthly_covered_earning', 'basic_primary_insurance_amount', 
+			'wep_primary_insurance_amount', 'average_indexed_monthly_non_covered_earning', 
+			'monthly_non_covered_pension', 'wep_reduction', 'final_primary_insurance_amount',
+			'max_delay_retirement_credit', 'delay_retirement_credit', 
+			'max_early_retirement_reduction', 'early_retirement_reduction',
+			'benefit', 'government_pension_offset', 'spousal_insurance_benefit', 
+			'survivor_insurance_benefit')

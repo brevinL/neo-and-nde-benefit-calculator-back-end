@@ -3,9 +3,7 @@ from django.db.models import Max
 from BenefitRule.models import Task, DetailRecord, percentage
 
 class DetailRecord(DetailRecord):
-	monthly_non_covered_pension_task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, related_name="monthly_non_covered_pension_task") 
-
-	def create_monthly_non_covered_pension_task(average_indexed_monthly_non_covered_earning, fraction_of_non_covered_aime_to_non_covered_pension, monthly_non_covered_pension):
+	def create_monthly_non_covered_pension_task(self, average_indexed_monthly_non_covered_earning, fraction_of_non_covered_aime_to_non_covered_pension, monthly_non_covered_pension):
 		monthly_non_covered_pension_task = Task.objects.create() 
 		instruction = monthly_non_covered_pension_task.instruction_set.create(description='Get average indexed monthly non covered earning', order=1)
 		instruction.expression_set.create(description=f'average indexed monthly non covered earning = {average_indexed_monthly_non_covered_earning}', order=1)
@@ -18,7 +16,7 @@ class DetailRecord(DetailRecord):
 
 		return monthly_non_covered_pension_task
 
-	def create_delay_retirement_credit_task(drc_law, year_of_birth, normal_retirement_age, respondent_delay_retirement_credit, max_delay_retirement_credit, delay_retirement_credit):
+	def create_delay_retirement_credit_task(self, drc_law, year_of_birth, normal_retirement_age, respondent_delay_retirement_credit, max_delay_retirement_credit, delay_retirement_credit):
 		delay_retirement_credit_task = drc_law.stepByStep(
 			year_of_birth=year_of_birth, 
 			normal_retirement_age=normal_retirement_age, 
@@ -33,7 +31,7 @@ class DetailRecord(DetailRecord):
 
 		return delay_retirement_credit_task
 
-	def create_early_retirement_reduction_task(primary_err_law, normal_retirement_age, earliest_retirement_age, respondent_early_retirement_reduction, max_early_retirement_reduction, early_retirement_reduction):
+	def create_early_retirement_reduction_task(self, primary_err_law, normal_retirement_age, earliest_retirement_age, respondent_early_retirement_reduction, max_early_retirement_reduction, early_retirement_reduction):
 		early_retirement_reduction_task = primary_err_law.stepByStep(normal_retirement_age=normal_retirement_age, 
 			early_retirement_age=earliest_retirement_age)
 		order = early_retirement_reduction_task.instruction_set.aggregate(Max('order')).get('order__max')
@@ -46,12 +44,12 @@ class DetailRecord(DetailRecord):
 
 		return early_retirement_reduction_task
 
-	def calculate_retirement_record(self, benefit_rules, respondent, beneficiary_record):
-		# earliest_retirement_age_task = earliest_retirement_age_law.stepByStep(year_of_birth=respondent.year_of_birth)
-		# normal_retirement_age_task = normal_retirement_age_law.stepByStep(year_of_birth=respondent.year_of_birth)
+	def calculate_retirement_record(self, benefit_rules, beneficiary_record):
+		# earliest_retirement_age_task = earliest_retirement_age_law.stepByStep(year_of_birth=self.content_object.year_of_birth)
+		# normal_retirement_age_task = normal_retirement_age_law.stepByStep(year_of_birth=self.content_object.year_of_birth)
 		average_indexed_monthly_covered_earning_task = self.create_average_indexed_monthly_covered_earning_task(
 			aime_law=benefit_rules.aime_law,
-			taxable_earnings=respondent.annual_covered_earnings)
+			taxable_earnings=self.content_object.annual_covered_earnings)
 		basic_primary_insurance_amount_task = self.create_basic_primary_insurance_amount_task(
 			pia_law=benefit_rules.pia_law,
 			average_indexed_monthly_earning=beneficiary_record.average_indexed_monthly_covered_earning, 
@@ -59,16 +57,16 @@ class DetailRecord(DetailRecord):
 		wep_primary_insurance_amount_task = self.create_wep_primary_insurance_amount_task(
 			wep_pia_law=benefit_rules.wep_pia_law,
 			average_indexed_monthly_earning=beneficiary_record.average_indexed_monthly_covered_earning,
-			year_of_coverage=respondent.years_of_covered_earnings)
+			year_of_coverage=self.content_object.years_of_covered_earnings)
 		average_indexed_monthly_non_covered_earning_task = self.create_average_indexed_monthly_non_covered_earning_task(
 			aime_law=benefit_rules.aime_law,
-			taxable_earnings=respondent.annual_non_covered_earnings)
+			taxable_earnings=self.content_object.annual_non_covered_earnings)
 		government_pension_offset_task = self.create_government_pension_offset_task(
 			gpo_law=benefit_rules.gpo_law, 
 			monthly_non_covered_pension=beneficiary_record.monthly_non_covered_pension)
 		monthly_non_covered_pension_task = self.create_monthly_non_covered_pension_task(
 			average_indexed_monthly_non_covered_earning=beneficiary_record.average_indexed_monthly_non_covered_earning,
-			fraction_of_non_covered_aime_to_non_covered_pension=respondent.fraction_of_non_covered_aime_to_non_covered_pension,
+			fraction_of_non_covered_aime_to_non_covered_pension=self.content_object.fraction_of_non_covered_aime_to_non_covered_pension,
 			monthly_non_covered_pension=beneficiary_record.monthly_non_covered_pension)
 		wep_reduction_task = self.create_wep_reduction_task(
 			wep_law=benefit_rules.wep_law,
@@ -81,16 +79,16 @@ class DetailRecord(DetailRecord):
 			final_primary_insurance_amount=beneficiary_record.final_primary_insurance_amount)
 		delay_retirement_credit_task = self.create_delay_retirement_credit_task(
 			drc_law=benefit_rules.drc_law,
-			year_of_birth=respondent.year_of_birth, 
+			year_of_birth=self.content_object.year_of_birth, 
 			normal_retirement_age=beneficiary_record.normal_retirement_age, 
-			respondent_delay_retirement_credit=respondent.delay_retirement_credit,
+			respondent_delay_retirement_credit=self.content_object.delay_retirement_credit,
 			delay_retirement_credit=beneficiary_record.delay_retirement_credit, 
 			max_delay_retirement_credit=beneficiary_record.max_delay_retirement_credit)
 		early_retirement_reduction_task = self.create_early_retirement_reduction_task(
 			primary_err_law=benefit_rules.primary_err_law,
 			normal_retirement_age=beneficiary_record.normal_retirement_age,
 			earliest_retirement_age=beneficiary_record.earliest_retirement_age,
-			respondent_early_retirement_reduction=respondent.early_retirement_reduction,
+			respondent_early_retirement_reduction=self.content_object.early_retirement_reduction,
 			max_early_retirement_reduction=beneficiary_record.max_early_retirement_reduction,
 			early_retirement_reduction=beneficiary_record.early_retirement_reduction)
 		benefit_task = self.create_benefit_task(
@@ -99,7 +97,7 @@ class DetailRecord(DetailRecord):
 			final_primary_insurance_amount=beneficiary_record.final_primary_insurance_amount, 
 			benefit=beneficiary_record.benefit)
 
-		return self.create_or_save_detail_record(average_indexed_monthly_covered_earning_task=average_indexed_monthly_covered_earning_task,
+		return self.update_detail_record(average_indexed_monthly_covered_earning_task=average_indexed_monthly_covered_earning_task,
 				basic_primary_insurance_amount_task=basic_primary_insurance_amount_task,
 				wep_primary_insurance_amount_task=wep_primary_insurance_amount_task,
 				average_indexed_monthly_non_covered_earning_task=average_indexed_monthly_non_covered_earning_task,
@@ -111,46 +109,13 @@ class DetailRecord(DetailRecord):
 				early_retirement_reduction_task=early_retirement_reduction_task,
 				benefit_task=benefit_task)
 
-	def create_or_save_detail_record(
-		average_indexed_monthly_covered_earning_task=None,
-		basic_primary_insurance_amount_task=None,
-		wep_primary_insurance_amount_task=None,
-		average_indexed_monthly_non_covered_earning_task=None,
-		government_pension_offset_task=None,
-		monthly_non_covered_pension_task=None,
-		wep_reduction_task=None,
-		final_primary_insurance_amount_task=None,
-		delay_retirement_credit_task=None,
-		early_retirement_reduction_task=None,
-		benefit_task=None):
-		try:
-			# if task been created then dont override it with null task
-			detail_record = DetailRecord.objects.get(person=respondent)
-			detail_record.average_indexed_monthly_covered_earning_task = average_indexed_monthly_covered_earning_task
-			detail_record.basic_primary_insurance_amount_task = basic_primary_insurance_amount_task
-			detail_record.wep_primary_insurance_amount_task = wep_primary_insurance_amount_task
-			detail_record.average_indexed_monthly_non_covered_earning_task = average_indexed_monthly_non_covered_earning_task
-			detail_record.government_pension_offset_task = government_pension_offset_task
-			detail_record.monthly_non_covered_pension_task = monthly_non_covered_pension_task
-			detail_record.wep_reduction_task = wep_reduction_task
-			detail_record.final_primary_insurance_amount_task = final_primary_insurance_amount_task
-			detail_record.delay_retirement_credit_task = delay_retirement_credit_task
-			detail_record.early_retirement_reduction_task = early_retirement_reduction_task
-			detail_record.benefit_task = benefit_task
-			detail_record.save()
-		except DetailRecord.DoesNotExist:
-			detail_record = self.create(
-				person=respondent,
-				average_indexed_monthly_covered_earning_task=average_indexed_monthly_covered_earning_task,
-				basic_primary_insurance_amount_task=basic_primary_insurance_amount_task,
-				wep_primary_insurance_amount_task=wep_primary_insurance_amount_task,
-				average_indexed_monthly_non_covered_earning_task=average_indexed_monthly_non_covered_earning_task,
-				government_pension_offset_task=government_pension_offset_task,
-				monthly_non_covered_pension_task=monthly_non_covered_pension_task,
-				wep_reduction_task=wep_reduction_task,
-				final_primary_insurance_amount_task=final_primary_insurance_amount_task,
-				delay_retirement_credit_task=delay_retirement_credit_task,
-				early_retirement_reduction_task=early_retirement_reduction_task,
-				benefit_task=benefit_task)
-
+	def calculate_survivor_benefits(self, benefit_rules, beneficiary_record, spousal_beneficiary_record, detail_record):
+		survivor_early_retirement_reduction = self.content_object.survivor_early_retirement_reduction
+		detail_record.survivor_insurance_benefit_task = benefit_rules.survivor_insurance_benefit_law.stepByStep(
+			primary_insurance_amount=beneficiary_record.benefit, 
+			deceased_spousal_primary_insurance_amount=spousal_beneficiary_record.basic_primary_insurance_amount, 
+			survivor_early_retirement_reduction_factor=survivor_early_retirement_reduction, 
+			spousal_delay_retirement_factor=spousal_beneficiary_record.delay_retirement_credit,
+			government_pension_offset=beneficiary_record.government_pension_offset)
+		detail_record.save()
 		return detail_record

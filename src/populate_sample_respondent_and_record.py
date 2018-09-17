@@ -11,7 +11,7 @@ from rest_framework.reverse import reverse
 if __name__ == '__main__':
 	print("Starting Respondent & Record population script...")
 
-	beneficary = Respondent.objects.create(
+	beneficary, created = Respondent.objects.get_or_create(
 		year_of_birth=1954,
 		years_of_covered_earnings=15,
 		annual_covered_earning=Money.objects.create(amount=30000.00),
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 		spousal_early_retirement_reduction=0.00,
 		survivor_early_retirement_reduction=0.00)
 
-	spouse = Respondent.objects.create(
+	spouse, created = Respondent.objects.get_or_create(
 		year_of_birth=1954,
 		years_of_covered_earnings=40,
 		annual_covered_earning=Money.objects.create(amount=50000.00),
@@ -35,20 +35,35 @@ if __name__ == '__main__':
 		spousal_early_retirement_reduction=0.00,
 		survivor_early_retirement_reduction=0.00)
 
-	Relationship.objects.create(
+	relationship, created = Relationship.objects.get_or_create(
 		content_object1=beneficary, 
 		content_object2=spouse, 
 		person1_role=Relationship.BENEFICIARY,
 		person2_role=Relationship.SPOUSE,
 		relationship_type=Relationship.MARRIED)
 
+	# import argparse
+	# parser = argparse.ArgumentParser(description='Populate a sample respondent and respondent\'s spouse. Also, calls on update record and detail record API.')
+	# parser.add_argument('integers', metavar='N', type=int, nargs='+',
+	# 	help='an integer for the accumulator')
+	# parser.add_argument('--sum', dest='accumulate', action='store_const',
+	# 	const=sum, default=max,
+	# 	help='sum the integers (default: find the max)')
+
 	import urllib.request
-	# url = f"http://localhost:8000/api/neo-and-nde-benefit-calculator/record/summary/?respondent={beneficary.id}"
+
 	domain = 'localhost:8000' # Site.objects.get_current().domain
 	path = reverse('neo-and-nde-benefit-calculator:respondent-detail', args=[beneficary.id])
-	action = 'get_record/'
+	action = 'update_record/'
 	url = f"http://{domain}{path}{action}"
 	print(url)
 	contents = urllib.request.urlopen(url).read()
+	print(contents)
+
+	action = 'update_detail_record/'
+	url = f"http://{domain}{path}{action}"
+	print(url)
+	contents = urllib.request.urlopen(url).read()
+	print(contents)
 
 	print("Finish Respondent & Record population script.")
