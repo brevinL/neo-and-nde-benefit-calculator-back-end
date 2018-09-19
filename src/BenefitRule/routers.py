@@ -4,4 +4,4 @@ from BenefitRule.views import *
 BenefitRuleRouter = SimpleRouter()
 BenefitRuleRouter.register(r'person', PersonViewSet, 'person')
 BenefitRuleRouter.register(r'relationship', RelationshipViewSet, 'relationship')
-BenefitRuleRouter.register(r'gpo', GovernmentPensionOffsetViewSet, 'gpo')
+BenefitRuleRouter.register(r'government-pension-offset', GovernmentPensionOffsetViewSet, 'government-pension-offset')

@@ -12,35 +12,41 @@ class RecordViewSet(viewsets.ModelViewSet):
 	queryset = Record.objects.all()
 	serializer_class = RecordSerializer
 
-	@action(methods=['get'], detail=False)
-	def update_record(self, request, pk=None):
-		year = 2016
+	def get_benefit_rules(self, start_date, end_date):
 		try:
 			benefit_rules = BenefitRule.objects.get(start_date__lte=date(year, 1, 1), end_date__gte=date(year, 12, 31))
 		except BenefitRule.DoesNotExist:
-			return Response({'detail': 'No Benefit Rules match the given query'}, content_type='application/json;charset=utf-8', status=status.HTTP_404_NOT_FOUND)
+			benefit_rules = None
 
-		if True:
-			person = Person.objects.get(request)
-		else:
-			respondent = Respondent.objects.get(request)
-			
-		record = self.get_object()
+		return benefit_rules
+
+	def get_beneficary(self):
+		return Person.objects.get()
+
+	def get_record(self, person):
 		try:
 			record = self.objects.get(person=person)
-		except self.record_class.DoesNotExist:
-			record = self.record_class(content_object=person)
+		except Record.DoesNotExist:
+			record = Record(content_object=person)
 			record.save()
+		return record
+
+	@action(methods=['get'], detail=False)
+	def update_record(self, request, pk=None):
+		year = 2016
+		benefit_rules = self.get_benefit_rules(start_date=date(year, 1, 1), end_date=date(year, 12, 31))
+		if benefit_rules is None:
+			return Response({'detail': 'No Benefit Rules match the given query'}, content_type='application/json;charset=utf-8', status=status.HTTP_404_NOT_FOUND)
+
+		beneficary = self.get_beneficary()
+			
+		record = self.get_record(person=beneficary)
 		record = record.calculate_retirement_record(benefit_rules=benefit_rules)
 
 		respondent_married_relationships = Relationship.objects.filter(Q(person1=person) | Q(person2=person), relationship_type=Relationship.MARRIED)
 		for relationship in respondent_married_relationships:
 			spouse = relationship.get_other(content_object=person)
-			try:
-				spouse_record = self.record_class.objects.get(person=spouse)
-			except self.record_class.DoesNotExist:
-				spouse_record = self.record_class(content_object=spouse)
-				spouse_record.save()
+			spouse_record = self.get_record(person=spouse)
 			spouse_record = spouse_record.calculate_retirement_record(benefit_rules=benefit_rules)
 
 			record = record.calculate_dependent_benefits(benefit_rules=benefit_rules, beneficiary_record=record, spousal_beneficiary_record=spouse_record)
